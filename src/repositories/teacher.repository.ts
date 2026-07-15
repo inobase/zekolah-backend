@@ -24,18 +24,23 @@ export class TeacherRepository {
       q.where((qb) => {
         qb.whereLike('users.name', `%${filter.search}%`)
           .orWhereLike('teachers.nip', `%${filter.search}%`)
+          .orWhereLike('teachers.specialization', `%${filter.search}%`)
       })
     }
     return q.orderBy('teachers.id', 'desc').limit(filter.limit).offset(filter.offset)
   }
 
   async count(filter: { school_id?: number; search?: string }): Promise<number> {
-    const q = this.knex('teachers').count<{ count: string }[]>('* as count').first()
+    const q = this.knex('teachers')
+      .join('users', 'teachers.user_id', 'users.id')
+      .count<{ count: string }[]>('teachers.id as count')
+      .first()
     if (filter.school_id) q.where('teachers.school_id', filter.school_id)
     if (filter.search) {
       q.where((qb: any) => {
         qb.whereLike('users.name', `%${filter.search}%`)
           .orWhereLike('teachers.nip', `%${filter.search}%`)
+          .orWhereLike('teachers.specialization', `%${filter.search}%`)
       })
     }
     const result = await q

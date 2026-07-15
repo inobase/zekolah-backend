@@ -65,6 +65,8 @@ export class AppError extends Error {
       case 'NIS_ALREADY_EXISTS':
       case 'STUDENT_HAS_SUBMISSIONS':
       case 'STUDENT_HAS_ATTENDANCE':
+      case 'CLASS_HAS_STUDENTS':
+        return 409;
       case 'USER_HAS_DEPENDENTS':
       case 'SCHOOL_HAS_DEPENDENTS':
         return 409;

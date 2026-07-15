@@ -23,6 +23,9 @@ export class UserRepository {
     password: string
     name: string
     role: string
+    phone?: string | null
+    avatar_url?: string | null
+    address?: string | null
   }): Promise<AuthUser> {
     const now = new Date()
     const [id] = await this.knex('users').insert({

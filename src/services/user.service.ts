@@ -77,6 +77,14 @@ export class UserService {
     return stripPassword(user) as SafeUser
   }
 
+  async create(body: Record<string, unknown>): Promise<SafeUser> {
+    const { email, password, name, role, phone, avatar_url, address } = body as {
+      email: string; password: string; name: string; role?: string; phone?: string | null; avatar_url?: string | null; address?: string | null
+    }
+    const created = await this.repo.create({ email, password, name, role, phone, avatar_url, address })
+    return stripPassword(created) as SafeUser
+  }
+
   async update(id: number, body: Record<string, unknown>): Promise<SafeUser> {
     const allowed = ['name', 'email', 'phone', 'avatar_url', 'address']
     const updates: Record<string, unknown> = {}

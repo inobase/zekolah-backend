@@ -6,6 +6,7 @@ import { FastifyInstance } from 'fastify'
 import { getKnex } from '../config/database'
 import { UserController } from '../controllers/user.controller'
 import {
+  CreateUserSchema,
   UpdateUserSchema,
   UserFilterSchema,
 } from '../validators/user.validator'
@@ -21,6 +22,15 @@ export const userRoutes = async (app: FastifyInstance): Promise<void> => {
       preValidation: async (req) => { req.query = UserFilterSchema.parse(req.query) as typeof req.query },
     },
     controller.list
+  )
+
+  app.post(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = CreateUserSchema.parse(req.body) },
+    },
+    controller.create
   )
 
   app.get(

@@ -92,7 +92,8 @@ export class ClassRepository {
   }
 
   async hasStudents(id: number): Promise<boolean> {
-    const row = await this.knex('students').where({ class_id: id }).count<{ count: string }[]>('* as count').first()
-    return Number((row as any)?.count ?? 0) > 0
+    const classStudentCount = await this.knex('class_students').where({ class_id: id }).count<{ count: string }[]>('* as count').first()
+    const directCount = await this.knex('students').where({ class_id: id }).count<{ count: string }[]>('* as count').first()
+    return Number((classStudentCount as any)?.count ?? 0) > 0 || Number((directCount as any)?.count ?? 0) > 0
   }
 }

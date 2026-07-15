@@ -62,10 +62,11 @@ export class SubjectRepository {
   }
 
   async hasDependents(id: number): Promise<boolean> {
-    const counts = await Promise.all([
-      this.knex('classes').where({ subject_id: id }).count('* as c').first(),
+    // Subject is referenced by teaching_assignments and assignments
+    const [taCount, assignmentCount] = await Promise.all([
+      this.knex('teaching_assignments').where({ subject_id: id }).count('* as c').first(),
       this.knex('assignments').where({ subject_id: id }).count('* as c').first(),
     ])
-    return counts.some((c) => Number((c as any)?.c ?? 0) > 0)
+    return Number((taCount as any)?.c ?? 0) > 0 || Number((assignmentCount as any)?.c ?? 0) > 0
   }
 }

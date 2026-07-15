@@ -5,7 +5,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Knex } from 'knex'
 import { UserService } from '../services/user.service'
-import { UserFilterInput, UpdateUserInput } from '../validators/user.validator'
+import { UserFilterInput, UpdateUserInput, CreateUserInput } from '../validators/user.validator'
 
 export class UserController {
   private service: UserService
@@ -18,6 +18,12 @@ export class UserController {
     const filter = req.query as UserFilterInput
     const result = await this.service.list(filter)
     return reply.send(result)
+  }
+
+  create = async (req: FastifyRequest, reply: FastifyReply) => {
+    const body = req.body as CreateUserInput
+    const user = await this.service.create(body as any)
+    return reply.code(201).send(user)
   }
 
   getById = async (req: FastifyRequest, reply: FastifyReply) => {
