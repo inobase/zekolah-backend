@@ -44,8 +44,8 @@ export const studentRoutes = async (app: FastifyInstance): Promise<void> => {
     const body = request.body as Record<string, unknown>;
     const [id] = await knex('students').insert({
       ...body,
-      created_at: knex.fn.now(),
-      updated_at: knex.fn.now(),
+      created_at: new Date(),
+      updated_at: new Date(),
     });
     const student = await knex('students').where({ id }).first();
     return reply.status(201).send(student);
@@ -56,7 +56,7 @@ export const studentRoutes = async (app: FastifyInstance): Promise<void> => {
     const knex = require('@/config/database').getKnex();
     const { id } = request.params as { id: number };
     const body = request.body as Record<string, unknown>;
-    await knex('students').where({ id }).update({ ...body, updated_at: knex.fn.now() });
+    await knex('students').where({ id }).update({ ...body, updated_at: new Date() });
     const student = await knex('students').where({ id }).first();
     return student;
   });

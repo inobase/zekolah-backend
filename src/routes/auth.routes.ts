@@ -44,8 +44,8 @@ export const authRoutes = async (app: FastifyInstance): Promise<void> => {
       name: data.name,
       role: data.role,
       status: 'active',
-      created_at: knex.fn.now(),
-      updated_at: knex.fn.now(),
+      created_at: new Date(),
+      updated_at: new Date(),
     });
 
     const user = await knex('users').where({ id }).first();

@@ -40,7 +40,7 @@ export const userRoutes = async (app: FastifyInstance): Promise<void> => {
       return reply.status(400).send({ message: 'No valid fields to update' });
     }
 
-    await knex('users').where({ id }).update({ ...updates, updated_at: knex.fn.now() });
+    await knex('users').where({ id }).update({ ...updates, updated_at: new Date() });
     const user = await knex('users').where({ id }).first();
     const { password: _, ...safe } = user;
     return safe;
@@ -50,7 +50,7 @@ export const userRoutes = async (app: FastifyInstance): Promise<void> => {
   app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     const knex = require('@/config/database').getKnex();
     const { id } = request.params as { id: number };
-    await knex('users').where({ id }).update({ status: 'inactive', updated_at: knex.fn.now() });
+    await knex('users').where({ id }).update({ status: 'inactive', updated_at: new Date() });
     return { message: 'User deactivated' };
   });
 };
