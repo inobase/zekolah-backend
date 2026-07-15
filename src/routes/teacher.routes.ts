@@ -1,54 +1,56 @@
 // =====================================================
-// Teacher Routes
+// Teacher Routes — Thin registration
 // =====================================================
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { getKnex } from '../config/database';
+import { FastifyInstance } from 'fastify'
+import { getKnex } from '../config/database'
+import { TeacherController } from '../controllers/teacher.controller'
+import {
+  CreateTeacherSchema,
+  UpdateTeacherSchema,
+  TeacherFilterSchema,
+} from '../validators/teacher.validator'
 
 export const teacherRoutes = async (app: FastifyInstance): Promise<void> => {
-  app.addHook('onRequest', app.authenticate);
+  const knex = getKnex()
+  const controller = new TeacherController(knex)
 
-  // GET /teachers
-  app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    return knex('teachers').join('users', 'teachers.user_id', 'users.id').select('*');
-  });
+  app.get(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.query = TeacherFilterSchema.parse(req.query) as typeof req.query },
+    },
+    controller.list
+  )
 
-  // GET /teachers/:id
-  app.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const teacher = await knex('teachers').join('users', 'teachers.user_id', 'users.id').where({ 'teachers.id': id }).first();
-    if (!teacher) return reply.status(404).send({ message: 'Teacher not found' });
-    return teacher;
-  });
+  app.get(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.getById
+  )
 
-  // POST /teachers
-  app.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const body = request.body as Record<string, unknown>;
-    const [id] = await knex('teachers').insert({
-      ...body,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-    return reply.status(201).send(await knex('teachers').where({ id }).first());
-  });
+  app.post(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = CreateTeacherSchema.parse(req.body) },
+    },
+    controller.create
+  )
 
-  // PATCH /teachers/:id
-  app.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const body = request.body as Record<string, unknown>;
-    await knex('teachers').where({ id }).update({ ...body, updated_at: new Date() });
-    return knex('teachers').where({ id }).first();
-  });
+  app.patch(
+    '/:id',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = UpdateTeacherSchema.parse(req.body) },
+    },
+    controller.update
+  )
 
-  // DELETE /teachers/:id
-  app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    await knex('teachers').where({ id }).del();
-    return { message: 'Teacher deleted' };
-  });
-};
+  app.delete(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.delete
+  )
+}

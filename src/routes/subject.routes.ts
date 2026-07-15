@@ -1,54 +1,56 @@
 // =====================================================
-// Subject Routes
+// Subject Routes — Thin registration of controller methods
 // =====================================================
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { getKnex } from '../config/database';
+import { FastifyInstance } from 'fastify'
+import { getKnex } from '../config/database'
+import { SubjectController } from '../controllers/subject.controller'
+import {
+  CreateSubjectSchema,
+  UpdateSubjectSchema,
+  SubjectFilterSchema,
+} from '../validators/subject.validator'
 
 export const subjectRoutes = async (app: FastifyInstance): Promise<void> => {
-  app.addHook('onRequest', app.authenticate);
+  const knex = getKnex()
+  const controller = new SubjectController(knex)
 
-  // GET /subjects
-  app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    return knex('subjects').select('*');
-  });
+  app.get(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.query = SubjectFilterSchema.parse(req.query) as typeof req.query },
+    },
+    controller.list
+  )
 
-  // GET /subjects/:id
-  app.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const subject = await knex('subjects').where({ id }).first();
-    if (!subject) return reply.status(404).send({ message: 'Subject not found' });
-    return subject;
-  });
+  app.get(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.getById
+  )
 
-  // POST /subjects
-  app.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const body = request.body as Record<string, unknown>;
-    const [id] = await knex('subjects').insert({
-      ...body,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-    return reply.status(201).send(await knex('subjects').where({ id }).first());
-  });
+  app.post(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = CreateSubjectSchema.parse(req.body) },
+    },
+    controller.create
+  )
 
-  // PATCH /subjects/:id
-  app.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const body = request.body as Record<string, unknown>;
-    await knex('subjects').where({ id }).update({ ...body, updated_at: new Date() });
-    return knex('subjects').where({ id }).first();
-  });
+  app.patch(
+    '/:id',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = UpdateSubjectSchema.parse(req.body) },
+    },
+    controller.update
+  )
 
-  // DELETE /subjects/:id
-  app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    await knex('subjects').where({ id }).del();
-    return { message: 'Subject deleted' };
-  });
-};
+  app.delete(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.delete
+  )
+}

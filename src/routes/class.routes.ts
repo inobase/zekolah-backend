@@ -1,57 +1,56 @@
 // =====================================================
-// Class Routes
+// Class Routes — Thin registration
 // =====================================================
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { getKnex } from '../config/database';
+import { FastifyInstance } from 'fastify'
+import { getKnex } from '../config/database'
+import { ClassController } from '../controllers/class.controller'
+import {
+  CreateClassSchema,
+  UpdateClassSchema,
+  ClassFilterSchema,
+} from '../validators/class.validator'
 
 export const classRoutes = async (app: FastifyInstance): Promise<void> => {
-  app.addHook('onRequest', app.authenticate);
+  const knex = getKnex()
+  const controller = new ClassController(knex)
 
-  // GET /classes - List classes with academic year info
-  app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    return knex('classes')
-      .join('academic_years', 'classes.academic_year_id', 'academic_years.id')
-      .join('schools', 'classes.school_id', 'schools.id')
-      .select('*', 'academic_years.year as academic_year_label', 'schools.name as school_name');
-  });
+  app.get(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.query = ClassFilterSchema.parse(req.query) as typeof req.query },
+    },
+    controller.list
+  )
 
-  // GET /classes/:id
-  app.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const klass = await knex('classes').where({ id }).first();
-    if (!klass) return reply.status(404).send({ message: 'Class not found' });
-    return klass;
-  });
+  app.get(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.getById
+  )
 
-  // POST /classes
-  app.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const body = request.body as Record<string, unknown>;
-    const [id] = await knex('classes').insert({
-      ...body,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-    return reply.status(201).send(await knex('classes').where({ id }).first());
-  });
+  app.post(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = CreateClassSchema.parse(req.body) },
+    },
+    controller.create
+  )
 
-  // PATCH /classes/:id
-  app.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const body = request.body as Record<string, unknown>;
-    await knex('classes').where({ id }).update({ ...body, updated_at: new Date() });
-    return knex('classes').where({ id }).first();
-  });
+  app.patch(
+    '/:id',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = UpdateClassSchema.parse(req.body) },
+    },
+    controller.update
+  )
 
-  // DELETE /classes/:id
-  app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    await knex('classes').where({ id }).del();
-    return { message: 'Class deleted' };
-  });
-};
+  app.delete(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.delete
+  )
+}

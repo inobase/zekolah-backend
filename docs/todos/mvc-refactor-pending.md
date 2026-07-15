@@ -1,7 +1,7 @@
 # Todos: MVC Refaktor — Modul yang Belum Direfactor
 
-> Status: Ditangguhkan — menunggu perintah lanjut
-> Terakhir dicek: 2026-07-16 00:05
+> Status: Refactor Dasar Selesai — lanjut ke modul dengan logic kompleks
+> Terakhir dicek: 2026-07-16 00:35
 
 ---
 
@@ -12,16 +12,31 @@
 | Auth | ✅ Done | 6 file (validator, controller, service, repo, routes) |
 | School | ✅ Done | 6 file |
 | User | ✅ Done | 4 file |
-| Student | ⏳ Pending | Perlu `StudentValidator`, `StudentRepository`, `StudentService`, `StudentController`, routes refactor |
-| Class | ⏳ Pending | Perlu `ClassValidator`, `ClassRepository`, `ClassService`, `ClassController`, routes refactor |
-| Teacher | ⏳ Pending | Mirror student pattern |
-| Subject | ⏳ Pending | Mirror school pattern (CRUD dasar) |
-| AcademicYear | ⏳ Pending | Mirror school pattern |
-| TeachingAssignment | ⏳ Pending | Lebih kompleks — butuh service logic |
-| Attendance | ⏳ Pending | Perlu filter + agregasi |
+| Subject | ✅ Done | 6 file (validator, interface, controller, service, repo, routes) |
+| AcademicYear | ✅ Done | 6 file |
+| Teacher | ✅ Done | 6 file — NIP uniqueness, FK ke user+school |
+| Student | ✅ Done | 6 file — NIS uniqueness, FK ke user+school, hasDependents |
+| Class | ✅ Done | 6 file — FK ke school+academic_year+teacher, hasStudents check |
+
+### Verifikasi Terakhir
+- `npm run build` → 0 errors
+- `npm test` → **37 tests passed**
+- `GET /api/v1/students` → 401 (auth middleware OK)
+- `GET /api/v1/teachers` → 401 (auth middleware OK)
+- `GET /api/v1/classes` → 401 (auth middleware OK)
+- `GET /health` → 200 OK
+
+---
+
+## Modul yang Belum Direfactor
+
+| Modul | Status | Catatan |
+|-------|--------|---------|
+| TeachingAssignment | ⏳ Pending | Multi-FK + uniqueness constraint |
+| Attendance | ⏳ Pending | Filter date range, agregasi per siswa |
 | Assignment | ⏳ Pending | Relasi ke class+subject+teacher |
-| Submission | ⏳ Pending | File upload + grading + transaction |
-| Grade | ⏳ Pending | Kalkulasi nilai + filter |
+| Submission | ⏳ Pending | File upload + grading + **Knex transaction** |
+| Grade | ⏳ Pending | Perhitungan nilai, grouping per assessment_type |
 
 ---
 
@@ -36,13 +51,14 @@ src/validators/{module}.validator.ts
 - Import `z` from zod
 - Buat schema untuk CREATE, UPDATE, FILTER
 - Export type via `z.infer<>`
+- Untuk field optional yang boleh null → `.nullable().optional()` lalu interface field pakai `T | null`
 
-### 2. Model Interface (opsional — interface only untuk saat ini)
+### 2. Model Interface (opsional — untuk type safety ekstra)
 ```
 src/models/interfaces/{Module}Interfaces.ts
 ```
-- Interface entitas utama (mis. `Student`, `CreateStudentInput`, dll.)
-- Bisa diisi saat refactor jika butuh type safety ekstra
+- Interface entitas utama
+- Jika validator pakai `.nullable()`, interface field juga harus `T | null`
 
 ### 3. Repository (wajib untuk yang butuh bisnis logic)
 ```
@@ -78,83 +94,10 @@ src/routes/{module}.routes.ts
 
 ---
 
-## Prioritas Refactor
+## Prioritas Refactor (Sisa)
 
 Urutan disarankan berdasarkan kompleksitas dependency:
 
 | Urutan | Modul | Alasan |
 |--------|-------|--------|
-| 1 | `subject` | CRUD paling sederhana, tidak bergantung modul lain |
-| 2 | `academic-year` | CRUD sederhana, bergantung ke school (sudah refactored) |
-| 3 | `teacher` | Mirror student pattern, ada di pool |
-| 4 | `student` | Sudah banyak query kompleks (join, search) |
-| 5 | `class` | Bergantung school+academic-year |
-| 6 | `teaching-assignment` | Multi-foreign-key + uniqueness constraint |
-| 7 | `attendance` | Filter date range, agregasi |
-| 8 | `assignment` | Relasi ke class+subject |
-| 9 | `grade` | Perhitungan nilai, filter |
-| 10 | `submission` | File upload + grading + transaction (paling kompleks) |
-
----
-
-## File yang Akan Dibuat
-
-Estimasi ~60 file baru + 13 file refactor (existing routes).
-
-Per modul yang tersisa (rata-rata):
-- 1 validator file
-- 1 model interface file (opsional)
-- 1 repository file
-- 1 service file
-- 1 controller file
-- 1 route refactor (≈50 baris)
-
-Total estimasi: ~50 file baru, ~13 file refactor.
-
----
-
-## Checklist Per Modul
-
-Untuk setiap modul, checklist:
-
-- [ ] Buat validator (`src/validators/{module}.validator.ts`)
-- [ ] Buat repository (`src/repositories/{module}.repository.ts`)
-- [ ] Buat service (`src/services/{module}.service.ts`)
-- [ ] Buat controller (`src/controllers/{module}.controller.ts`)
-- [ ] Refactor route (`src/routes/{module}.routes.ts`)
-- [ ] Run `npm run type-check` — harus 0 errors
-- [ ] Run `npm run test` — harus 11 passed
-
----
-
-## Catatan Khusus Per Modul
-
-### Student
-- Route saat ini join ke `users` table → perlu di-handle di repository
-- Search by name + NIS → perlu di-implement di `findAll()` repository
-- Pagination sudah ada → pola bisa reuse dari school
-
-### Class
-- Table `class_students` dan `teaching_assignments` punya FK ke classes
-- Harus buat `hasDependents()` check sebelum delete
-
-### Teacher
-- Mirror student (ada `user_id` FK, `nip` unique)
-- Punya `teaching_assignments` dependents
-
-### Submission
-- **Paling kompleks** — butuh Knex transaction
-- File upload via multipart → perlu special handling di service
-- Grading update assignment stats
-
-### Attendance
-- Perlu filter by date range (`date_from`, `date_to`)
-- Index di DB membantu query performance
-
-### Grade
-- Multiple `assessment_type` per student+subject
-- Perlu grouping/agregasi di repository
-
----
-
-*File ini otomatis dibaca saat instruksi diberikan untuk lanjut refactor.*
+| 1 | `teaching-assignment` | Multi-FK + uniqueness constraint; perlu `
