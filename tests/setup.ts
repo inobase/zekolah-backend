@@ -1,6 +1,6 @@
 // Vitest setup: prepare SQLite test database.
 import path from 'path';
-import * as sqliteMigrations from '../migrations/001_create_base_tables_sqlite';
+import * as sqliteMigrations from '../migrations/sqlite';
 import process from 'process';
 
 // ---- Environment overrides ----

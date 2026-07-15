@@ -1,6 +1,6 @@
 // Test helper: build Fastify app, inject requests, cleanup after each test.
 import { buildApp } from '../src/app';
-import * as sqliteMigrations from '../migrations/001_create_base_tables_sqlite';
+import * as sqliteMigrations from '../migrations/sqlite';
 
 const openedApps: Awaited<ReturnType<typeof buildApp>>[] = [];
 
