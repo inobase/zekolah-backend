@@ -12,10 +12,10 @@ import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 
-import { config } from '@/config';
-import { errorHandler } from '@/middlewares/errorHandler';
-import { apiRoutes } from '@/routes';
-import { initDatabase } from '@/config/database';
+import { config } from './config';
+import { errorHandler } from './middlewares/errorHandler';
+import { apiRoutes } from './routes';
+import { initDatabase } from './config/database';
 
 // Declare JWT user type and authenticate decorator on Fastify
 declare module '@fastify/jwt' {

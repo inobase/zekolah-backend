@@ -1,6 +1,6 @@
 {
   "name": "zekolah-backend",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Zekolah Backend - Educational Management System",
   "main": "dist/index.js",
   "scripts": {

@@ -3,7 +3,7 @@
 // =====================================================
 
 import { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { logger } from '@/utils/logger';
+import { logger } from '../utils/logger';
 
 interface ErrorResponse {
   statusCode: number;

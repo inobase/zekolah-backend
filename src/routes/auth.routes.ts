@@ -7,8 +7,8 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
-import { getKnex } from '@/config/database';
-import { config } from '@/config';
+import { getKnex } from '../config/database';
+import { config } from '../config';
 
 const registerSchema = z.object({
   email: z.string().email(),
