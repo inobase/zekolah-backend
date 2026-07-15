@@ -3,19 +3,20 @@
 // =====================================================
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { getKnex } from '../config/database';
 
 export const schoolRoutes = async (app: FastifyInstance): Promise<void> => {
   app.addHook('onRequest', app.authenticate);
 
   // GET /schools
   app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     return knex('schools').select('*');
   });
 
   // GET /schools/:id
   app.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     const { id } = request.params as { id: number };
     const school = await knex('schools').where({ id }).first();
     if (!school) return reply.status(404).send({ message: 'School not found' });
@@ -24,7 +25,7 @@ export const schoolRoutes = async (app: FastifyInstance): Promise<void> => {
 
   // POST /schools
   app.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     const body = request.body as Record<string, unknown>;
     const [id] = await knex('schools').insert({
       ...body,
@@ -37,7 +38,7 @@ export const schoolRoutes = async (app: FastifyInstance): Promise<void> => {
 
   // PATCH /schools/:id
   app.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     const { id } = request.params as { id: number };
     const body = request.body as Record<string, unknown>;
     await knex('schools').where({ id }).update({ ...body, updated_at: new Date() });
@@ -47,7 +48,7 @@ export const schoolRoutes = async (app: FastifyInstance): Promise<void> => {
 
   // DELETE /schools/:id
   app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     const { id } = request.params as { id: number };
     await knex('schools').where({ id }).del();
     return { message: 'School deleted' };

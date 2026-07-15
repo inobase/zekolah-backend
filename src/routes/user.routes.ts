@@ -3,20 +3,21 @@
 // =====================================================
 
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { getKnex } from '../config/database';
 
 export const userRoutes = async (app: FastifyInstance): Promise<void> => {
   app.addHook('onRequest', app.authenticate);
 
   // GET /users - List all users
   app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     const users = await knex('users').select('id', 'email', 'name', 'role', 'status', 'created_at');
     return users;
   });
 
   // GET /users/:id - Get user by ID
   app.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     const { id } = request.params as { id: number };
     const user = await knex('users').where({ id }).first();
     if (!user) return reply.status(404).send({ message: 'User not found' });
@@ -26,7 +27,7 @@ export const userRoutes = async (app: FastifyInstance): Promise<void> => {
 
   // PATCH /users/:id - Update user
   app.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     const { id } = request.params as { id: number };
     const body = request.body as Record<string, unknown>;
 
@@ -48,7 +49,7 @@ export const userRoutes = async (app: FastifyInstance): Promise<void> => {
 
   // DELETE /users/:id - Deactivate user
   app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = require('@/config/database').getKnex();
+    const knex = getKnex();
     const { id } = request.params as { id: number };
     await knex('users').where({ id }).update({ status: 'inactive', updated_at: new Date() });
     return { message: 'User deactivated' };
