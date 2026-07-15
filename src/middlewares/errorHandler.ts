@@ -4,6 +4,7 @@
 
 import { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { logger } from '../utils/logger';
+import { AppError } from '../utils/AppError';
 
 interface ErrorResponse {
   statusCode: number;
@@ -14,6 +15,17 @@ interface ErrorResponse {
 
 export function errorHandler(this: FastifyInstance, error: FastifyError, request: FastifyRequest, reply: FastifyReply): void {
   logger.error(`[${request.method} ${request.url}] ${error.message}`, { stack: error.stack });
+
+  // Handle AppError (business / service-layer errors)
+  if (error instanceof AppError) {
+    reply.status(error.statusCode).send({
+      statusCode: error.statusCode,
+      error: error.code,
+      message: error.message,
+      details: error.details,
+    });
+    return;
+  }
 
   // Handle Zod validation errors
   if (error.name === 'ZodError') {

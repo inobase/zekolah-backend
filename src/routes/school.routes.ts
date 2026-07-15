@@ -1,56 +1,56 @@
 // =====================================================
-// School Routes - Multi-school management
+// School Routes — Thin registration of controller methods
 // =====================================================
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { getKnex } from '../config/database';
+import { FastifyInstance } from 'fastify'
+import { getKnex } from '../config/database'
+import { SchoolController } from '../controllers/school.controller'
+import {
+  CreateSchoolSchema,
+  UpdateSchoolSchema,
+  SchoolFilterSchema,
+} from '../validators/school.validator'
 
 export const schoolRoutes = async (app: FastifyInstance): Promise<void> => {
-  app.addHook('onRequest', app.authenticate);
+  const knex = getKnex()
+  const controller = new SchoolController(knex)
 
-  // GET /schools
-  app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    return knex('schools').select('*');
-  });
+  app.get(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.query = SchoolFilterSchema.parse(req.query) as typeof req.query },
+    },
+    controller.list
+  )
 
-  // GET /schools/:id
-  app.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const school = await knex('schools').where({ id }).first();
-    if (!school) return reply.status(404).send({ message: 'School not found' });
-    return school;
-  });
+  app.get(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.getById
+  )
 
-  // POST /schools
-  app.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const body = request.body as Record<string, unknown>;
-    const [id] = await knex('schools').insert({
-      ...body,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-    const school = await knex('schools').where({ id }).first();
-    return reply.status(201).send(school);
-  });
+  app.post(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = CreateSchoolSchema.parse(req.body) },
+    },
+    controller.create
+  )
 
-  // PATCH /schools/:id
-  app.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const body = request.body as Record<string, unknown>;
-    await knex('schools').where({ id }).update({ ...body, updated_at: new Date() });
-    const school = await knex('schools').where({ id }).first();
-    return school;
-  });
+  app.patch(
+    '/:id',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = UpdateSchoolSchema.parse(req.body) },
+    },
+    controller.update
+  )
 
-  // DELETE /schools/:id
-  app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    await knex('schools').where({ id }).del();
-    return { message: 'School deleted' };
-  });
-};
+  app.delete(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.delete
+  )
+}

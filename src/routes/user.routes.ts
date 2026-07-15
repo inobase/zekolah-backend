@@ -1,57 +1,46 @@
 // =====================================================
-// User Routes
+// User Routes — Thin registration of controller methods
 // =====================================================
 
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { getKnex } from '../config/database';
+import { FastifyInstance } from 'fastify'
+import { getKnex } from '../config/database'
+import { UserController } from '../controllers/user.controller'
+import {
+  UpdateUserSchema,
+  UserFilterSchema,
+} from '../validators/user.validator'
 
 export const userRoutes = async (app: FastifyInstance): Promise<void> => {
-  app.addHook('onRequest', app.authenticate);
+  const knex = getKnex()
+  const controller = new UserController(knex)
 
-  // GET /users - List all users
-  app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const users = await knex('users').select('id', 'email', 'name', 'role', 'status', 'created_at');
-    return users;
-  });
+  app.get(
+    '/',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.query = UserFilterSchema.parse(req.query) as typeof req.query },
+    },
+    controller.list
+  )
 
-  // GET /users/:id - Get user by ID
-  app.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const user = await knex('users').where({ id }).first();
-    if (!user) return reply.status(404).send({ message: 'User not found' });
-    const { password: _, ...safe } = user;
-    return safe;
-  });
+  app.get(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.getById
+  )
 
-  // PATCH /users/:id - Update user
-  app.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    const body = request.body as Record<string, unknown>;
+  app.patch(
+    '/:id',
+    {
+      onRequest: [app.authenticate],
+      preValidation: async (req) => { req.body = UpdateUserSchema.parse(req.body) },
+    },
+    controller.update
+  )
 
-    const allowedFields = ['name', 'email', 'phone', 'avatar_url', 'address'];
-    const updates: Record<string, unknown> = {};
-    for (const field of allowedFields) {
-      if (body[field]) updates[field] = body[field];
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return reply.status(400).send({ message: 'No valid fields to update' });
-    }
-
-    await knex('users').where({ id }).update({ ...updates, updated_at: new Date() });
-    const user = await knex('users').where({ id }).first();
-    const { password: _, ...safe } = user;
-    return safe;
-  });
-
-  // DELETE /users/:id - Deactivate user
-  app.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const knex = getKnex();
-    const { id } = request.params as { id: number };
-    await knex('users').where({ id }).update({ status: 'inactive', updated_at: new Date() });
-    return { message: 'User deactivated' };
-  });
-};
+  app.delete(
+    '/:id',
+    { onRequest: [app.authenticate] },
+    controller.deactivate
+  )
+}
