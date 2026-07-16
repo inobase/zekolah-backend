@@ -1,7 +1,7 @@
 # Todos: MVC Refaktor — Modul yang Belum Direfactor
 
-> Status: Refactor Dasar Selesai — lanjut ke modul dengan logic kompleks
-> Terakhir dicek: 2026-07-16 00:35
+> Status: Refactor Dasar Selesai + Semua Modul Direfactor — Testing Selesai
+> Terakhir dicek: 2026-07-16 11:15
 
 ---
 
@@ -17,6 +17,15 @@
 | Teacher | ✅ Done | 6 file — NIP uniqueness, FK ke user+school |
 | Student | ✅ Done | 6 file — NIS uniqueness, FK ke user+school, hasDependents |
 | Class | ✅ Done | 6 file — FK ke school+academic_year+teacher, hasStudents check |
+| TeachingAssignment | ✅ Done | 6 file — Multi-FK + uniqueness constraint |
+| Attendance | ✅ Done | 6 file — Filter date range, agregasi per siswa |
+| Assignment | ✅ Done | 6 file — Relasi ke class+subject+teacher, hasDependents |
+| Submission | ✅ Done | 6 file — File upload + grading dengan auto-graded timestamp |
+| Grade | ✅ Done | 6 file — Score max validation, grouping per assessment_type |
+
+### Verifikasi Terakhir
+- `npm run build` → 0 errors
+- `npm test` → **190 tests passed** ✅
 
 ### Verifikasi Terakhir
 - `npm run build` → 0 errors
@@ -28,7 +37,7 @@
 
 ---
 
-## Modul yang Belum Direfactor
+## Modul yang Sudah Direfactor
 
 | Modul | Status | Catatan |
 |-------|--------|---------|
@@ -37,6 +46,12 @@
 | Assignment | ✅ Done | 6 file — Relasi ke class+subject+teacher, hasDependents |
 | Submission | ✅ Done | 6 file — File upload + grading dengan auto-graded timestamp |
 | Grade | ✅ Done | 6 file — Score max validation, grouping per assessment_type |
+
+### Perubahan Terakhir
+- ✅ Semua 5 modul direfactor: validator, repository, service, controller, route, interface
+- ✅ Test suite lengkap: **190 tests passed**
+- ✅ Bug fixes: repository timestamp handling (created_at/updated_at), findById join academic_years, findByUniqueFields .first() iteration
+- ✅ Fix migration `max_score` dari `string` ke `decimal` pada tabel grades
 
 ---
 
@@ -94,10 +109,28 @@ src/routes/{module}.routes.ts
 
 ---
 
-## Prioritas Refactor (Sisa)
+## Status Akhir Refactor
 
-Urutan disarankan berdasarkan kompleksitas dependency:
+### Semua Modul Telah Selesai ✅
 
-| Urutan | Modul | Alasan |
-|--------|-------|--------|
-| 1 | `teaching-assignment` | Multi-FK + uniqueness constraint; perlu `
+Refactor MVC telah selesai untuk semua modul. Berikut ringkasan:
+
+| # | Modul | Alasan Diprioritaskan | Status |
+|---|-------|----------------------|--------|
+| 1 | `teaching-assignment` | Multi-FK + uniqueness constraint | ✅ Done |
+| 2 | `attendance` | Filter date range & agregasi | ✅ Done |
+| 3 | `assignment` | Relasi class+subject+teacher | ✅ Done |
+| 4 | `submission` | Transaksi atomik (file + grade) | ✅ Done |
+| 5 | `grade` | Score max validation, grouping | ✅ Done |
+
+### Test Coverage
+
+- Total: **190 tests** across **14 test files**
+- Status: ✅ Semua passing
+- Bug fixes teridentifikasi selama testing:
+  - `created_at`/`updated_at` NOT NULL di repository insert (6 modules)
+  - `teaching_assignment.findById` missing `academic_years` join
+  - `findByUniqueFields` iteration error pada `.first()`
+  - Migration `grades.max_score` type: `string` → `decimal`
+
+Tidak ada modul refactor yang belum selesai.
