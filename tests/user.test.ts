@@ -15,7 +15,6 @@ describe('User API', () => {
     email: string;
     name: string;
     password?: string;
-    role?: string;
   }) => {
     const res = await app.inject({
       method: 'POST',
@@ -24,7 +23,6 @@ describe('User API', () => {
         email: payload.email,
         password: payload.password ?? 'Password123',
         name: payload.name,
-        role: payload.role ?? 'student',
       },
     });
     return JSON.parse(res.payload) as { user: { id: number; email: string } };
@@ -41,7 +39,6 @@ describe('User API', () => {
         email: TEST_EMAIL,
         password: TEST_PASSWORD,
         name: 'Admin User',
-        role: 'admin',
       },
     });
     const regBody = JSON.parse(regRes.payload) as { token: string; user: { id: number } };
@@ -69,8 +66,8 @@ describe('User API', () => {
 
   it('GET /api/v1/users returns user list with pagination', async () => {
     // Create additional users
-    await registerUser({ email: 'teacher1@test.com', name: 'Teacher 1', role: 'teacher' });
-    await registerUser({ email: 'teacher2@test.com', name: 'Teacher 2', role: 'teacher' });
+    await registerUser({ email: 'teacher1@test.com', name: 'Teacher 1' });
+    await registerUser({ email: 'teacher2@test.com', name: 'Teacher 2' });
 
     const res = await app.inject({
       method: 'GET',
@@ -85,25 +82,12 @@ describe('User API', () => {
     expect(body.data[0].password).toBeUndefined(); // password harus di-strip
   });
 
-  it('GET /api/v1/users filters by role', async () => {
-    await registerUser({ email: 'teacher@test.com', name: 'Teacher', role: 'teacher' });
-    await registerUser({ email: 'student@test.com', name: 'Student', role: 'student' });
-
-    const res = await app.inject({
-      method: 'GET',
-      url: '/api/v1/users?role=teacher',
-      headers: getAuthHeaders(),
-    });
-    expect(res.statusCode).toBe(200);
-    const body = JSON.parse(res.payload);
-    expect(body.pagination.total).toBe(1);
-    expect(body.data[0].role).toBe('teacher');
-    expect(body.data[0].email).toBe('teacher@test.com');
-  });
+  // Phase 5: GET /api/v1/users?role=xxx filter removed (users.role column dropped).
+  // Role-based filtering now goes via /user_roles join or RBAC layer.
 
   it('GET /api/v1/users searches by name and email', async () => {
-    await registerUser({ email: 'john.doe@test.com', name: 'John Doe', role: 'student' });
-    await registerUser({ email: 'jane.smith@test.com', name: 'Jane Smith', role: 'student' });
+    await registerUser({ email: 'john.doe@test.com', name: 'John Doe' });
+    await registerUser({ email: 'jane.smith@test.com', name: 'Jane Smith' });
 
     // Search by name
     const nameRes = await app.inject({
@@ -131,7 +115,7 @@ describe('User API', () => {
   it('GET /api/v1/users respects pagination', async () => {
     // Create 4 additional users (total 5 with admin)
     for (let i = 1; i <= 4; i++) {
-      await registerUser({ email: `user${i}@test.com`, name: `User ${i}`, role: 'student' });
+      await registerUser({ email: `user${i}@test.com`, name: `User ${i}` });
     }
 
     const res = await app.inject({
@@ -148,7 +132,7 @@ describe('User API', () => {
   });
 
   it('GET /api/v1/users filters by status', async () => {
-    const { user } = await registerUser({ email: 'to-deactivate@test.com', name: 'To Deactivate', role: 'student' });
+    const { user } = await registerUser({ email: 'to-deactivate@test.com', name: 'To Deactivate' });
 
     // Deactivate
     await app.inject({
@@ -241,7 +225,7 @@ describe('User API', () => {
   // ---- DELETE /users/:id (deactivate) ----
 
   it('DELETE /api/v1/users/:id deactivates user', async () => {
-    const { user } = await registerUser({ email: 'todelete@test.com', name: 'To Delete', role: 'student' });
+    const { user } = await registerUser({ email: 'todelete@test.com', name: 'To Delete' });
 
     const res = await app.inject({
       method: 'DELETE',
@@ -261,3 +245,4 @@ describe('User API', () => {
     expect(body.status).toBe('inactive');
   });
 });
+

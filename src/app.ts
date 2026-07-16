@@ -26,7 +26,6 @@ declare module '@fastify/jwt' {
     user: {
       id: number;
       email: string;
-      role?: string;            // legacy — kept during transition
       name?: string;
       school_id?: number | null;
       academic_year_id?: number | null;

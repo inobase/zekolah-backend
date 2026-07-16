@@ -34,7 +34,6 @@ describe('Auth API', () => {
         email: TEST_EMAIL,
         password: TEST_PASSWORD,
         name: TEST_NAME,
-        role: 'student',
       },
     });
 
@@ -56,7 +55,6 @@ describe('Auth API', () => {
         email: TEST_EMAIL,
         password: TEST_PASSWORD,
         name: TEST_NAME,
-        role: 'student',
       },
     });
 
@@ -114,7 +112,6 @@ describe('Auth API', () => {
       email: TEST_EMAIL,
       password: hash,
       name: TEST_NAME,
-      role: 'student',
       status: 'active',
       created_at: new Date(),
       updated_at: new Date(),
@@ -143,7 +140,6 @@ describe('Auth API', () => {
       email: TEST_EMAIL,
       password: hash,
       name: TEST_NAME,
-      role: 'student',
       status: 'active',
       created_at: new Date(),
       updated_at: new Date(),
@@ -185,7 +181,6 @@ describe('Auth API', () => {
         email: TEST_EMAIL,
         password: TEST_PASSWORD,
         name: TEST_NAME,
-        role: 'student',
       },
     });
     const regBody = JSON.parse(regRes.payload) as { token: string };
@@ -216,3 +211,4 @@ describe('Auth API', () => {
     expect(res.statusCode).toBe(401);
   });
 });
+

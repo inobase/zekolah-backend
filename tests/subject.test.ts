@@ -21,7 +21,6 @@ describe('Subject API', () => {
         email: 'subadmin@example.com',
         password: 'Password123',
         name: 'Subject Admin',
-        role: 'admin',
       },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
@@ -162,3 +161,4 @@ describe('Subject API', () => {
     expect(res.statusCode).toBe(404);
   });
 });
+

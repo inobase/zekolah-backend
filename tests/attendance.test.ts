@@ -17,7 +17,7 @@ describe('Attendance API', () => {
     const regRes = await app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: { email: 'ataadmin@example.com', password: 'Password123', name: 'AT Admin', role: 'admin' },
+      payload: { email: 'ataadmin@example.com', password: 'Password123', name: 'AT Admin' },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
 
@@ -53,7 +53,7 @@ describe('Attendance API', () => {
       method: 'POST',
       url: '/api/v1/users',
       headers: getAuthHeaders(),
-      payload: { email: 'ata.student@test.com', password: 'Password123', name: 'Siswa Test', role: 'student', phone: '081234567890' },
+      payload: { email: 'ata.student@test.com', password: 'Password123', name: 'Siswa Test', phone: '081234567890' },
     });
     studentUserId = (JSON.parse(userRes.payload) as { id: number }).id;
     const studentRes = await app.inject({
@@ -188,3 +188,4 @@ describe('Attendance API', () => {
     expect(getRes.statusCode).toBe(404);
   });
 });
+

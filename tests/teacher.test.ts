@@ -13,7 +13,7 @@ describe('Teacher API', () => {
     const regRes = await app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: { email: 'tchadmin@example.com', password: 'Password123', name: 'Teacher Admin', role: 'admin' },
+      payload: { email: 'tchadmin@example.com', password: 'Password123', name: 'Teacher Admin' },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
 
@@ -30,7 +30,7 @@ describe('Teacher API', () => {
       method: 'POST',
       url: '/api/v1/users',
       headers: getAuthHeaders(),
-      payload: { email: 'teacher@test.com', password: 'Password123', name: 'Guru Test', role: 'teacher', phone: '081234567890' },
+      payload: { email: 'teacher@test.com', password: 'Password123', name: 'Guru Test', phone: '081234567890' },
     });
   });
 
@@ -157,18 +157,24 @@ describe('Teacher API', () => {
 let _uid = 0;
 async function createUser(app: any, headers: Record<string, string>) {
   _uid++;
-  const res = await app.inject({ method: 'POST', url: '/api/v1/users', headers, payload: { email: `teacher-${_uid}@t.com`, password: 'Password123', name: `Teacher ${_uid}`, role: 'teacher', phone: '081234567890' } });
+  const res = await app.inject({ method: 'POST', url: '/api/v1/users', headers, payload: { email: `teacher-${_uid}@t.com`, password: 'Password123', name: `Teacher ${_uid}`, phone: '081234567890' } });
   return (JSON.parse(res.payload) as { id: number }).id;
 }
 
 async function getUserId(app: any, headers: Record<string, string>) {
-  // Find the first teacher user from users table
+  // Find the first teacher user from user_roles table (Phase 5: users.role dropped)
   const knexModule = await import('../src/config/database');
   const knex = knexModule.getKnex();
-  const users = await knex('users').where('role', 'teacher').select('id');
+  const users = await knex('user_roles')
+    .join('roles', 'user_roles.role_id', 'roles.id')
+    .where('roles.name', 'teacher')
+    .where('user_roles.is_active', true)
+    .distinct('user_roles.user_id as id')
+    .select('user_roles.user_id as id');
   if (users.length > 0) return users[0].id;
   // Fallback: create one
   _uid += 1000;
-  const res = await app.inject({ method: 'POST', url: '/api/v1/users', headers, payload: { email: `temp-${_uid}@t.com`, password: 'Password123', name: `Temp ${_uid}`, role: 'teacher', phone: '081234567890' } });
+  const res = await app.inject({ method: 'POST', url: '/api/v1/users', headers, payload: { email: `temp-${_uid}@t.com`, password: 'Password123', name: `Temp ${_uid}`, phone: '081234567890' } });
   return (JSON.parse(res.payload) as { id: number }).id;
 }
+

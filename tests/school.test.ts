@@ -21,7 +21,6 @@ describe('School API', () => {
         email: 'admin@example.com',
         password: 'Password123',
         name: 'Admin User',
-        role: 'admin',
       },
     });
     const regBody = JSON.parse(regRes.payload) as { token: string };
@@ -287,3 +286,4 @@ describe('School API', () => {
     expect(res.statusCode).toBe(404);
   });
 });
+

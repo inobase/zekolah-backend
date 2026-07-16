@@ -42,3 +42,4 @@ describe('Health & Ping API', () => {
     expect(body.pong).toBe(true);
   });
 });
+

@@ -7,14 +7,13 @@ import { UserRepository } from '../repositories/user.repository'
 import { AppError } from '../utils/AppError'
 
 const SAFE_FIELDS = [
-  'id', 'email', 'name', 'role', 'status', 'phone', 'avatar_url', 'address', 'created_at', 'updated_at',
+  'id', 'email', 'name', 'status', 'phone', 'avatar_url', 'address', 'created_at', 'updated_at',
 ] as const
 
 export type SafeUser = {
   id: number
   email: string
   name: string
-  role: string
   status: string
   phone: string | null
   avatar_url: string | null
@@ -38,19 +37,17 @@ export class UserService {
   async list(filter: {
     page: number
     limit: number
-    role?: string
     status?: string
     search?: string
   }): Promise<{ data: SafeUser[]; pagination: { page: number; limit: number; total: number } }> {
-    const { page, limit, role, status, search } = filter
+    const { page, limit, status, search } = filter
     const offset = (page - 1) * limit
 
     let q = this.knex('users')
-      .select('id', 'email', 'name', 'role', 'status', 'phone', 'avatar_url', 'address', 'created_at')
+      .select('id', 'email', 'name', 'status', 'phone', 'avatar_url', 'address', 'created_at')
     if (search) {
       q.where((qb: any) => qb.whereLike('name', `%${search}%`).orWhereLike('email', `%${search}%`))
     }
-    if (role) q.where({ role })
     if (status) q.where({ status })
 
     const [{ count }] = await this.knex('users')
@@ -59,7 +56,6 @@ export class UserService {
         if (search) {
           qb.where((b: any) => b.whereLike('name', `%${search}%`).orWhereLike('email', `%${search}%`))
         }
-        if (role) qb.where({ role })
         if (status) qb.where({ status })
       })
 
@@ -78,10 +74,10 @@ export class UserService {
   }
 
   async create(body: Record<string, unknown>): Promise<SafeUser> {
-    const { email, password, name, role, phone, avatar_url, address } = body as {
-      email: string; password: string; name: string; role?: string; phone?: string | null; avatar_url?: string | null; address?: string | null
+    const { email, password, name, phone, avatar_url, address } = body as {
+      email: string; password: string; name: string; phone?: string | null; avatar_url?: string | null; address?: string | null
     }
-    const created = await this.repo.create({ email, password, name, role: role || 'unknown', phone, avatar_url, address })
+    const created = await this.repo.create({ email, password, name, phone, avatar_url, address })
     return stripPassword(created) as SafeUser
   }
 

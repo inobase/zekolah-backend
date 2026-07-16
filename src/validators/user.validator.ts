@@ -8,7 +8,6 @@ export const CreateUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).max(100),
   name: z.string().min(2).max(100),
-  role: z.enum(['admin', 'teacher', 'student', 'parent']).default('student'),
   phone: z.string().max(20).optional().nullable(),
   avatar_url: z.string().max(500).optional().nullable(),
   address: z.string().max(500).optional().nullable(),
@@ -25,7 +24,6 @@ export const UpdateUserSchema = z.object({
 export const UserFilterSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  role: z.enum(['admin', 'teacher', 'student', 'parent']).optional(),
   status: z.enum(['active', 'inactive', 'suspended']).optional(),
   search: z.string().max(100).optional(),
 })

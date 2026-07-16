@@ -37,7 +37,6 @@ export class RoleResolver {
     userId: number,
     email: string,
     name: string | undefined,
-    legacyRole: string | undefined,
     roles: ResolvedUserRole[],
     schoolId: number | null,
     academicYearId: number | null
@@ -46,7 +45,6 @@ export class RoleResolver {
       id: userId,
       email,
       name,
-      role: legacyRole,  // kept for transition period
       roles,
       activeSchoolId: schoolId,
       activeAcademicYearId: academicYearId,

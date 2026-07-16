@@ -13,7 +13,7 @@ describe('Student API', () => {
     const regRes = await app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: { email: 'stdadmin@example.com', password: 'Password123', name: 'Student Admin', role: 'admin' },
+      payload: { email: 'stdadmin@example.com', password: 'Password123', name: 'Student Admin' },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
 
@@ -30,7 +30,7 @@ describe('Student API', () => {
       method: 'POST',
       url: '/api/v1/users',
       headers: getAuthHeaders(),
-      payload: { email: 'student@test.com', password: 'Password123', name: 'Siswa Test', role: 'student', phone: '081234567890' },
+      payload: { email: 'student@test.com', password: 'Password123', name: 'Siswa Test', phone: '081234567890' },
     });
   });
 
@@ -162,7 +162,7 @@ describe('Student API', () => {
 });
 
 async function ensureStudentUser(app: any, headers: Record<string, string>, seed: number) {
-  const res = await app.inject({ method: 'POST', url: '/api/v1/users', headers, payload: { email: `student-${Date.now()}-${seed}@s.com`, password: 'Password123', name: `Siswa ${seed}`, role: 'student', phone: `0812345678${String(seed).padStart(2, '0')}` } });
+  const res = await app.inject({ method: 'POST', url: '/api/v1/users', headers, payload: { email: `student-${Date.now()}-${seed}@s.com`, password: 'Password123', name: `Siswa ${seed}`, phone: `0812345678${String(seed).padStart(2, '0')}` } });
   return (JSON.parse(res.payload) as { id: number }).id;
 }
 
@@ -170,7 +170,13 @@ async function getStudentUserId(app: any, headers: Record<string, string>) {
   // Find existing student user via DB; if none, create one
   const knexModule = await import('../src/config/database');
   const knex = knexModule.getKnex();
-  const users = await knex('users').where('role', 'student').select('id');
+  const users = await knex('user_roles')
+    .join('roles', 'user_roles.role_id', 'roles.id')
+    .where('roles.name', 'student')
+    .where('user_roles.is_active', true)
+    .distinct('user_roles.user_id as id')
+    .select('user_roles.user_id as id');
   if (users.length > 0) return users[0].id;
   return ensureStudentUser(app, headers, 1);
 }
+

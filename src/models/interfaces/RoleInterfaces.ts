@@ -56,7 +56,6 @@ export interface AugmentedUser {
   id: number
   email: string
   name?: string
-  role?: string         // legacy — deprecated, kept for transition
   roles: ResolvedUserRole[]
   activeSchoolId: number | null
   activeAcademicYearId: number | null

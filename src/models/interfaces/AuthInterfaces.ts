@@ -6,7 +6,6 @@ export interface AuthUser {
   id: number
   email: string
   name: string
-  role: string
   status: string
   phone?: string | null
   avatar_url?: string | null
@@ -21,7 +20,6 @@ export interface SafeUser {
   id: number
   email: string
   name: string
-  role: string
   status: string
   phone?: string | null
   avatar_url?: string | null

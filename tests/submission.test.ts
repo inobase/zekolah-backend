@@ -21,7 +21,7 @@ describe('Submission API', () => {
     const regRes = await app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: { email: 'subadmin@example.com', password: 'Password123', name: 'SUB Admin', role: 'admin' },
+      payload: { email: 'subadmin@example.com', password: 'Password123', name: 'SUB Admin' },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
 
@@ -66,7 +66,7 @@ describe('Submission API', () => {
       method: 'POST',
       url: '/api/v1/users',
       headers: getAuthHeaders(),
-      payload: { email: 'sub.teacher@test.com', password: 'Password123', name: 'Guru SUB', role: 'teacher', phone: '081234567890' },
+      payload: { email: 'sub.teacher@test.com', password: 'Password123', name: 'Guru SUB', phone: '081234567890' },
     });
     teacherUserId = (JSON.parse(tUserRes.payload) as { id: number }).id;
     const teacherRes = await app.inject({
@@ -82,7 +82,7 @@ describe('Submission API', () => {
       method: 'POST',
       url: '/api/v1/users',
       headers: getAuthHeaders(),
-      payload: { email: 'sub.student@test.com', password: 'Password123', name: 'Siswa SUB', role: 'student', phone: '081234567891' },
+      payload: { email: 'sub.student@test.com', password: 'Password123', name: 'Siswa SUB', phone: '081234567891' },
     });
     studentUserId = (JSON.parse(sUserRes.payload) as { id: number }).id;
     const studentRes = await app.inject({
@@ -231,3 +231,4 @@ describe('Submission API', () => {
     expect(res.statusCode).toBe(404);
   });
 });
+

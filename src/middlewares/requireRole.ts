@@ -31,10 +31,8 @@ export const requireRole = (requirement: RoleRequirement) => {
       })
     }
 
-    // Get roles from augmented user (Phase 3) OR fallback to legacy role string
-    const roles: ResolvedUserRole[] = user.roles ?? (
-      user.role ? [{ role: user.role, school_id: null, academic_year_id: null, is_active: true }] : []
-    )
+    // Get roles from augmented user (set by app.authenticate in Phase 3)
+    const roles: ResolvedUserRole[] = user.roles ?? []
 
     if (roles.length === 0) {
       return reply.code(403).send({

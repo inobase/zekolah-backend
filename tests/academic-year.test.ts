@@ -13,7 +13,7 @@ describe('AcademicYear API', () => {
     const regRes = await app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: { email: 'ayadmin@example.com', password: 'Password123', name: 'AY Admin', role: 'admin' },
+      payload: { email: 'ayadmin@example.com', password: 'Password123', name: 'AY Admin' },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
 
@@ -135,3 +135,4 @@ describe('AcademicYear API', () => {
     expect(getRes.statusCode).toBe(404);
   });
 });
+

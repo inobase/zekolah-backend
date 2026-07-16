@@ -22,7 +22,6 @@ export class UserRepository {
     email: string
     password: string
     name: string
-    role: string
     phone?: string | null
     avatar_url?: string | null
     address?: string | null
@@ -32,7 +31,6 @@ export class UserRepository {
       email: data.email,
       password: data.password,
       name: data.name,
-      role: data.role,
       status: 'active',
       created_at: now,
       updated_at: now,

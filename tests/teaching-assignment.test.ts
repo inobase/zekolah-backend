@@ -17,7 +17,7 @@ describe('TeachingAssignment API', () => {
     const regRes = await app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: { email: 'taadmin@example.com', password: 'Password123', name: 'TA Admin', role: 'admin' },
+      payload: { email: 'taadmin@example.com', password: 'Password123', name: 'TA Admin' },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
 
@@ -62,7 +62,7 @@ describe('TeachingAssignment API', () => {
       method: 'POST',
       url: '/api/v1/users',
       headers: getAuthHeaders(),
-      payload: { email: 'ta.teacher@test.com', password: 'Password123', name: 'Guru TA', role: 'teacher', phone: '081234567890' },
+      payload: { email: 'ta.teacher@test.com', password: 'Password123', name: 'Guru TA', phone: '081234567890' },
     });
     const userId = (JSON.parse(userRes.payload) as { id: number }).id;
     const teacherRes = await app.inject({
@@ -203,3 +203,4 @@ describe('TeachingAssignment API', () => {
     expect(res.statusCode).toBe(404);
   });
 });
+

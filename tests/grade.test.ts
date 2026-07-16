@@ -20,7 +20,7 @@ describe('Grade API', () => {
     const regRes = await app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: { email: 'grdadmin@example.com', password: 'Password123', name: 'GRD Admin', role: 'admin' },
+      payload: { email: 'grdadmin@example.com', password: 'Password123', name: 'GRD Admin' },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
 
@@ -65,7 +65,7 @@ describe('Grade API', () => {
       method: 'POST',
       url: '/api/v1/users',
       headers: getAuthHeaders(),
-      payload: { email: 'grd.teacher@test.com', password: 'Password123', name: 'Guru GRD', role: 'teacher', phone: '081234567890' },
+      payload: { email: 'grd.teacher@test.com', password: 'Password123', name: 'Guru GRD', phone: '081234567890' },
     });
     teacherUserId = (JSON.parse(tUserRes.payload) as { id: number }).id;
     const teacherRes = await app.inject({
@@ -81,7 +81,7 @@ describe('Grade API', () => {
       method: 'POST',
       url: '/api/v1/users',
       headers: getAuthHeaders(),
-      payload: { email: 'grd.student@test.com', password: 'Password123', name: 'Siswa GRD', role: 'student', phone: '081234567891' },
+      payload: { email: 'grd.student@test.com', password: 'Password123', name: 'Siswa GRD', phone: '081234567891' },
     });
     studentUserId = (JSON.parse(sUserRes.payload) as { id: number }).id;
     const studentRes = await app.inject({
@@ -217,3 +217,4 @@ describe('Grade API', () => {
     expect(res.statusCode).toBe(404);
   });
 });
+

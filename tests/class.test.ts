@@ -14,7 +14,7 @@ describe('Class API', () => {
     const regRes = await app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: { email: 'clsadmin@example.com', password: 'Password123', name: 'Class Admin', role: 'admin' },
+      payload: { email: 'clsadmin@example.com', password: 'Password123', name: 'Class Admin' },
     });
     token = (JSON.parse(regRes.payload) as { token: string }).token;
 
@@ -105,7 +105,7 @@ describe('Class API', () => {
 
   it('POST /api/v1/classes creates with class_advisor_id', async () => {
     // Setup teacher first
-    const userRes = await app.inject({ method: 'POST', url: '/api/v1/users', headers: getAuthHeaders(), payload: { email: `advisor-${Date.now()}@t.com`, password: 'Password123', name: 'Advisor', role: 'teacher', phone: '081234567891' } });
+    const userRes = await app.inject({ method: 'POST', url: '/api/v1/users', headers: getAuthHeaders(), payload: { email: `advisor-${Date.now()}@t.com`, password: 'Password123', name: 'Advisor', phone: '081234567891' } });
     const userId = (JSON.parse(userRes.payload) as { id: number }).id;
 
     const teacherRes = await app.inject({ method: 'POST', url: '/api/v1/teachers', headers: getAuthHeaders(), payload: { user_id: userId, school_id: schoolId, nip: `NIP-${Date.now()}` } });
@@ -163,7 +163,7 @@ describe('Class API', () => {
     const classId = (JSON.parse(createRes.payload) as { id: number }).id;
 
     // Create user + student + assign class
-    const userRes = await app.inject({ method: 'POST', url: '/api/v1/users', headers: getAuthHeaders(), payload: { email: `studcls-${Date.now()}@s.com`, password: 'Password123', name: 'Student in Class', role: 'student', phone: `081234567${Date.now().toString().slice(-3)}` } });
+    const userRes = await app.inject({ method: 'POST', url: '/api/v1/users', headers: getAuthHeaders(), payload: { email: `studcls-${Date.now()}@s.com`, password: 'Password123', name: 'Student in Class', phone: `081234567${Date.now().toString().slice(-3)}` } });
     const userId = (JSON.parse(userRes.payload) as { id: number }).id;
 
     await app.inject({ method: 'POST', url: '/api/v1/students', headers: getAuthHeaders(), payload: { user_id: userId, school_id: schoolId, nis: `NISCLS${Date.now()}` } });
