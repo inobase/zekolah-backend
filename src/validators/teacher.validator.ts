@@ -27,6 +27,36 @@ export const TeacherFilterSchema = z.object({
   search: z.string().max(100).optional(),
 })
 
+// Response schemas
+export const TeacherResponseSchema = z.object({
+  id: z.number(),
+  nip: z.string().nullable(),
+  user_id: z.number(),
+  specialization: z.string().nullable(),
+  address: z.string().nullable(),
+  phone: z.string().nullable(),
+  school_id: z.number(),
+  created_at: z.any(),
+  updated_at: z.any(),
+})
+
+export const PaginatedTeachersResponseSchema = z.object({
+  data: z.array(TeacherResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+  }),
+})
+
+export const TeacherDeleteResponseSchema = z.object({
+  message: z.string(),
+})
+
+export const TeacherIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 export type CreateTeacherInput = z.infer<typeof CreateTeacherSchema>
 export type UpdateTeacherInput = z.infer<typeof UpdateTeacherSchema>
 export type TeacherFilterInput = z.infer<typeof TeacherFilterSchema>

@@ -34,6 +34,39 @@ export const StudentFilterSchema = z.object({
   search: z.string().max(100).optional(),
 })
 
+// Response schemas
+export const StudentResponseSchema = z.object({
+  id: z.number(),
+  nis: z.string(),
+  nisn: z.string().nullable(),
+  user_id: z.number(),
+  class_id: z.number().nullable(),
+  address: z.string().nullable(),
+  phone: z.string().nullable(),
+  date_of_birth: z.string().nullable(),
+  gender: z.string().nullable(),
+  school_id: z.number(),
+  created_at: z.any(),
+  updated_at: z.any(),
+})
+
+export const PaginatedStudentsResponseSchema = z.object({
+  data: z.array(StudentResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+  }),
+})
+
+export const StudentDeleteResponseSchema = z.object({
+  message: z.string(),
+})
+
+export const StudentIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 export type CreateStudentInput = z.infer<typeof CreateStudentSchema>
 export type UpdateStudentInput = z.infer<typeof UpdateStudentSchema>
 export type StudentFilterInput = z.infer<typeof StudentFilterSchema>

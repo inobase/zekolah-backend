@@ -2,55 +2,101 @@
 // Class Routes — Thin registration
 // =====================================================
 
-import { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { ClassController } from '../controllers/class.controller'
 import {
   CreateClassSchema,
   UpdateClassSchema,
   ClassFilterSchema,
+  ClassResponseSchema,
+  PaginatedClassesResponseSchema,
+  ClassDeleteResponseSchema,
+  ClassIdParamSchema,
 } from '../validators/class.validator'
 
-export const classRoutes = async (app: FastifyInstance): Promise<void> => {
+function bindHandler(handler: any) {
+  return handler
+}
+
+export const classRoutes = async (app: FastifyZodInstance): Promise<void> => {
   const knex = getKnex()
   const controller = new ClassController(knex)
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.query = ClassFilterSchema.parse(req.query) as typeof req.query },
+      schema: {
+        tags: ['classes'],
+        summary: 'List all classes',
+        security: [{ bearerAuth: [] }],
+        querystring: ClassFilterSchema,
+        response: { 200: PaginatedClassesResponseSchema },
+      },
     },
-    controller.list
+    bindHandler(controller.list.bind(controller))
   )
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.getById
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['classes'],
+        summary: 'Get class by ID',
+        security: [{ bearerAuth: [] }],
+        params: ClassIdParamSchema,
+        response: { 200: ClassResponseSchema },
+      },
+    },
+    bindHandler(controller.getById.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = CreateClassSchema.parse(req.body) },
+      schema: {
+        tags: ['classes'],
+        summary: 'Create a new class',
+        security: [{ bearerAuth: [] }],
+        body: CreateClassSchema,
+        response: { 201: ClassResponseSchema },
+      },
     },
-    controller.create
+    bindHandler(controller.create.bind(controller))
   )
 
-  app.patch(
+  app.withTypeProvider<ZodTypeProvider>().patch(
     '/:id',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = UpdateClassSchema.parse(req.body) },
+      schema: {
+        tags: ['classes'],
+        summary: 'Update class by ID',
+        security: [{ bearerAuth: [] }],
+        params: ClassIdParamSchema,
+        body: UpdateClassSchema,
+        response: { 200: ClassResponseSchema },
+      },
     },
-    controller.update
+    bindHandler(controller.update.bind(controller))
   )
 
-  app.delete(
+  app.withTypeProvider<ZodTypeProvider>().delete(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.delete
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['classes'],
+        summary: 'Delete class by ID',
+        security: [{ bearerAuth: [] }],
+        params: ClassIdParamSchema,
+        response: { 204: ClassDeleteResponseSchema },
+      },
+    },
+    bindHandler(controller.delete.bind(controller))
   )
 }

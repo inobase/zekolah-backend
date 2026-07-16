@@ -2,55 +2,101 @@
 // User Routes — Thin registration of controller methods
 // =====================================================
 
-import { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { UserController } from '../controllers/user.controller'
 import {
   CreateUserSchema,
   UpdateUserSchema,
   UserFilterSchema,
+  UserResponseSchema,
+  PaginatedUsersResponseSchema,
+  UserDeleteResponseSchema,
+  UserIdParamSchema,
 } from '../validators/user.validator'
 
-export const userRoutes = async (app: FastifyInstance): Promise<void> => {
+function bindHandler(handler: any) {
+  return handler
+}
+
+export const userRoutes = async (app: FastifyZodInstance): Promise<void> => {
   const knex = getKnex()
   const controller = new UserController(knex)
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.query = UserFilterSchema.parse(req.query) as typeof req.query },
+      schema: {
+        tags: ['users'],
+        summary: 'List all users',
+        security: [{ bearerAuth: [] }],
+        querystring: UserFilterSchema,
+        response: { 200: PaginatedUsersResponseSchema },
+      },
     },
-    controller.list
+    bindHandler(controller.list.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = CreateUserSchema.parse(req.body) },
+      schema: {
+        tags: ['users'],
+        summary: 'Create a new user',
+        security: [{ bearerAuth: [] }],
+        body: CreateUserSchema,
+        response: { 201: UserResponseSchema },
+      },
     },
-    controller.create
+    bindHandler(controller.create.bind(controller))
   )
 
-  app.get(
-    '/:id',
-    { onRequest: [app.authenticate] },
-    controller.getById
-  )
-
-  app.patch(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/:id',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = UpdateUserSchema.parse(req.body) },
+      schema: {
+        tags: ['users'],
+        summary: 'Get user by ID',
+        security: [{ bearerAuth: [] }],
+        params: UserIdParamSchema,
+        response: { 200: UserResponseSchema },
+      },
     },
-    controller.update
+    bindHandler(controller.getById.bind(controller))
   )
 
-  app.delete(
+  app.withTypeProvider<ZodTypeProvider>().patch(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.deactivate
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['users'],
+        summary: 'Update user by ID',
+        security: [{ bearerAuth: [] }],
+        params: UserIdParamSchema,
+        body: UpdateUserSchema,
+        response: { 200: UserResponseSchema },
+      },
+    },
+    bindHandler(controller.update.bind(controller))
+  )
+
+  app.withTypeProvider<ZodTypeProvider>().delete(
+    '/:id',
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['users'],
+        summary: 'Deactivate user by ID',
+        security: [{ bearerAuth: [] }],
+        params: UserIdParamSchema,
+        response: { 200: UserDeleteResponseSchema },
+      },
+    },
+    bindHandler(controller.deactivate.bind(controller))
   )
 }

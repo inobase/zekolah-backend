@@ -2,55 +2,101 @@
 // Teacher Routes — Thin registration
 // =====================================================
 
-import { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { TeacherController } from '../controllers/teacher.controller'
 import {
   CreateTeacherSchema,
   UpdateTeacherSchema,
   TeacherFilterSchema,
+  TeacherResponseSchema,
+  PaginatedTeachersResponseSchema,
+  TeacherDeleteResponseSchema,
+  TeacherIdParamSchema,
 } from '../validators/teacher.validator'
 
-export const teacherRoutes = async (app: FastifyInstance): Promise<void> => {
+function bindHandler(handler: any) {
+  return handler
+}
+
+export const teacherRoutes = async (app: FastifyZodInstance): Promise<void> => {
   const knex = getKnex()
   const controller = new TeacherController(knex)
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.query = TeacherFilterSchema.parse(req.query) as typeof req.query },
+      schema: {
+        tags: ['teachers'],
+        summary: 'List all teachers',
+        security: [{ bearerAuth: [] }],
+        querystring: TeacherFilterSchema,
+        response: { 200: PaginatedTeachersResponseSchema },
+      },
     },
-    controller.list
+    bindHandler(controller.list.bind(controller))
   )
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.getById
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['teachers'],
+        summary: 'Get teacher by ID',
+        security: [{ bearerAuth: [] }],
+        params: TeacherIdParamSchema,
+        response: { 200: TeacherResponseSchema },
+      },
+    },
+    bindHandler(controller.getById.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = CreateTeacherSchema.parse(req.body) },
+      schema: {
+        tags: ['teachers'],
+        summary: 'Create a new teacher',
+        security: [{ bearerAuth: [] }],
+        body: CreateTeacherSchema,
+        response: { 201: TeacherResponseSchema },
+      },
     },
-    controller.create
+    bindHandler(controller.create.bind(controller))
   )
 
-  app.patch(
+  app.withTypeProvider<ZodTypeProvider>().patch(
     '/:id',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = UpdateTeacherSchema.parse(req.body) },
+      schema: {
+        tags: ['teachers'],
+        summary: 'Update teacher by ID',
+        security: [{ bearerAuth: [] }],
+        params: TeacherIdParamSchema,
+        body: UpdateTeacherSchema,
+        response: { 200: TeacherResponseSchema },
+      },
     },
-    controller.update
+    bindHandler(controller.update.bind(controller))
   )
 
-  app.delete(
+  app.withTypeProvider<ZodTypeProvider>().delete(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.delete
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['teachers'],
+        summary: 'Delete teacher by ID',
+        security: [{ bearerAuth: [] }],
+        params: TeacherIdParamSchema,
+        response: { 204: TeacherDeleteResponseSchema },
+      },
+    },
+    bindHandler(controller.delete.bind(controller))
   )
 }

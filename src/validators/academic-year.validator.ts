@@ -29,6 +29,36 @@ export const AcademicYearFilterSchema = z.object({
   search: z.string().max(100).optional(),
 })
 
+// Response schemas
+export const AcademicYearResponseSchema = z.object({
+  id: z.number(),
+  school_id: z.number(),
+  year: z.string(),
+  start_date: z.any(),
+  end_date: z.any(),
+  semester: z.string(),
+  status: z.string(),
+  created_at: z.any(),
+  updated_at: z.any(),
+})
+
+export const PaginatedAcademicYearsResponseSchema = z.object({
+  data: z.array(AcademicYearResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+  }),
+})
+
+export const AcademicYearDeleteResponseSchema = z.object({
+  message: z.string(),
+})
+
+export const AcademicYearIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 export type CreateAcademicYearInput = z.infer<typeof CreateAcademicYearSchema>
 export type UpdateAcademicYearInput = z.infer<typeof UpdateAcademicYearSchema>
 export type AcademicYearFilterInput = z.infer<typeof AcademicYearFilterSchema>

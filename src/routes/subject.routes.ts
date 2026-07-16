@@ -2,55 +2,101 @@
 // Subject Routes — Thin registration of controller methods
 // =====================================================
 
-import { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { SubjectController } from '../controllers/subject.controller'
 import {
   CreateSubjectSchema,
   UpdateSubjectSchema,
   SubjectFilterSchema,
+  SubjectResponseSchema,
+  PaginatedSubjectsResponseSchema,
+  SubjectDeleteResponseSchema,
+  SubjectIdParamSchema,
 } from '../validators/subject.validator'
 
-export const subjectRoutes = async (app: FastifyInstance): Promise<void> => {
+function bindHandler(handler: any) {
+  return handler
+}
+
+export const subjectRoutes = async (app: FastifyZodInstance): Promise<void> => {
   const knex = getKnex()
   const controller = new SubjectController(knex)
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.query = SubjectFilterSchema.parse(req.query) as typeof req.query },
+      schema: {
+        tags: ['subjects'],
+        summary: 'List all subjects',
+        security: [{ bearerAuth: [] }],
+        querystring: SubjectFilterSchema,
+        response: { 200: PaginatedSubjectsResponseSchema },
+      },
     },
-    controller.list
+    bindHandler(controller.list.bind(controller))
   )
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.getById
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['subjects'],
+        summary: 'Get subject by ID',
+        security: [{ bearerAuth: [] }],
+        params: SubjectIdParamSchema,
+        response: { 200: SubjectResponseSchema },
+      },
+    },
+    bindHandler(controller.getById.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = CreateSubjectSchema.parse(req.body) },
+      schema: {
+        tags: ['subjects'],
+        summary: 'Create a new subject',
+        security: [{ bearerAuth: [] }],
+        body: CreateSubjectSchema,
+        response: { 201: SubjectResponseSchema },
+      },
     },
-    controller.create
+    bindHandler(controller.create.bind(controller))
   )
 
-  app.patch(
+  app.withTypeProvider<ZodTypeProvider>().patch(
     '/:id',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = UpdateSubjectSchema.parse(req.body) },
+      schema: {
+        tags: ['subjects'],
+        summary: 'Update subject by ID',
+        security: [{ bearerAuth: [] }],
+        params: SubjectIdParamSchema,
+        body: UpdateSubjectSchema,
+        response: { 200: SubjectResponseSchema },
+      },
     },
-    controller.update
+    bindHandler(controller.update.bind(controller))
   )
 
-  app.delete(
+  app.withTypeProvider<ZodTypeProvider>().delete(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.delete
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['subjects'],
+        summary: 'Delete subject by ID',
+        security: [{ bearerAuth: [] }],
+        params: SubjectIdParamSchema,
+        response: { 204: SubjectDeleteResponseSchema },
+      },
+    },
+    bindHandler(controller.delete.bind(controller))
   )
 }

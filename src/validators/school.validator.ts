@@ -23,6 +23,39 @@ export const SchoolFilterSchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 })
 
+// Response schemas
+export const SchoolResponseSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  code: z.string(),
+  email: z.string().nullable(),
+  phone: z.string().nullable(),
+  address: z.string().nullable(),
+  city: z.string().nullable(),
+  province: z.string().nullable(),
+  logo_url: z.string().nullable(),
+  status: z.string(),
+  created_at: z.any(),
+  updated_at: z.any(),
+})
+
+export const PaginatedSchoolsResponseSchema = z.object({
+  data: z.array(SchoolResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+  }),
+})
+
+export const SchoolDeleteResponseSchema = z.object({
+  message: z.string(),
+})
+
+export const SchoolIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 export type CreateSchoolInput = z.infer<typeof CreateSchoolSchema>
 export type UpdateSchoolInput = z.infer<typeof UpdateSchoolSchema>
 export type SchoolFilterInput = z.infer<typeof SchoolFilterSchema>

@@ -26,6 +26,35 @@ export const ClassFilterSchema = z.object({
   grade: z.string().max(20).optional(),
 })
 
+// Response schemas
+export const ClassResponseSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  grade: z.string(),
+  school_id: z.number(),
+  academic_year_id: z.number(),
+  class_advisor_id: z.number().nullable(),
+  created_at: z.any(),
+  updated_at: z.any(),
+})
+
+export const PaginatedClassesResponseSchema = z.object({
+  data: z.array(ClassResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+  }),
+})
+
+export const ClassDeleteResponseSchema = z.object({
+  message: z.string(),
+})
+
+export const ClassIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 export type CreateClassInput = z.infer<typeof CreateClassSchema>
 export type UpdateClassInput = z.infer<typeof UpdateClassSchema>
 export type ClassFilterInput = z.infer<typeof ClassFilterSchema>
