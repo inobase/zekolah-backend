@@ -53,11 +53,12 @@ export class TeachingAssignmentRepository {
   }
 
   async findById(id: number): Promise<TeachingAssignmentWithDetails | null> {
-    const [row] = await this.knex('teaching_assignments')
+    const row = await this.knex('teaching_assignments')
       .join('teachers', 'teaching_assignments.teacher_id', 'teachers.id')
       .join('users', 'teachers.user_id', 'users.id')
       .join('classes', 'teaching_assignments.class_id', 'classes.id')
       .join('subjects', 'teaching_assignments.subject_id', 'subjects.id')
+      .join('academic_years', 'teaching_assignments.academic_year_id', 'academic_years.id')
       .select(
         'teaching_assignments.*',
         'users.name as teacher_name',
@@ -69,6 +70,7 @@ export class TeachingAssignmentRepository {
         'academic_years.year as academic_year_label'
       )
       .where('teaching_assignments.id', id)
+      .first()
 
     return row || null
   }
@@ -79,14 +81,15 @@ export class TeachingAssignmentRepository {
     subject_id: number
     academic_year_id: number
   }): Promise<TeachingAssignment | null> {
-    const [row] = await this.knex('teaching_assignments')
+    const row = await this.knex('teaching_assignments')
       .where(data)
       .first()
     return row || null
   }
 
   async create(data: { teacher_id: number; class_id: number; subject_id: number; academic_year_id: number }): Promise<number> {
-    const [id] = await this.knex('teaching_assignments').insert(data)
+    const now = new Date()
+    const [id] = await this.knex('teaching_assignments').insert({ ...data, created_at: now, updated_at: now })
     return id
   }
 

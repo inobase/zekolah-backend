@@ -63,7 +63,8 @@ export class GradeRepository {
   }
 
   async create(data: Partial<Grade>): Promise<number> {
-    const [id] = await this.knex('grades').insert(data)
+    const now = new Date()
+    const [id] = await this.knex('grades').insert({ ...data, created_at: now, updated_at: now })
     return id
   }
 

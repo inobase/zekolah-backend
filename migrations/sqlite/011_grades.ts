@@ -11,7 +11,7 @@ exports.up = async function (knex) {
     table.integer('academic_year_id').notNullable();
     table.string('assessment_type', 100).notNullable();
     table.decimal('score', 5, 2).notNullable();
-    table.string('max_score', 10).defaultTo('100');
+    table.decimal('max_score', 5, 2).notNullable().defaultTo(100);
     table.integer('teacher_id').nullable();
     table.foreign('student_id').references('students.id').onDelete('CASCADE');
     table.foreign('subject_id').references('subjects.id').onDelete('CASCADE');

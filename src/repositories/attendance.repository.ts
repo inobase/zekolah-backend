@@ -63,7 +63,8 @@ export class AttendanceRepository {
   }
 
   async create(data: { student_id: number; subject_id: number; date: string; status: string }): Promise<number> {
-    const [id] = await this.knex('attendance').insert(data)
+    const now = new Date()
+    const [id] = await this.knex('attendance').insert({ ...data, created_at: now, updated_at: now })
     return id
   }
 

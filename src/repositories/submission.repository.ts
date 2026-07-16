@@ -58,7 +58,8 @@ export class SubmissionRepository {
   }
 
   async create(data: Partial<Submission>): Promise<number> {
-    const [id] = await this.knex('submissions').insert(data)
+    const now = new Date()
+    const [id] = await this.knex('submissions').insert({ ...data, created_at: now, updated_at: now })
     return id
   }
 
