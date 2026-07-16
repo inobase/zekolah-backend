@@ -8,6 +8,9 @@ import { FastifyInstance } from 'fastify'
 import { config } from '../config'
 import { AppError } from '../utils/AppError'
 import { UserRepository } from '../repositories/user.repository'
+import { UserRoleRepository } from '../repositories/userRole.repository'
+import { RoleRepository } from '../repositories/role.repository'
+import { RoleResolver } from '../utils/roleResolver'
 import { AuthUser, AuthTokenResponse, SafeUser } from '../models/interfaces/AuthInterfaces'
 import { LoginInput, RegisterInput, RefreshInput } from '../validators/auth.validator'
 
@@ -41,7 +44,11 @@ export class AuthService {
     })
 
     const safe = this.stripPassword(user)
-    const token = app.jwt.sign({ id: safe.id, email: safe.email, role: safe.role })
+    const token = app.jwt.sign({
+      id: safe.id,
+      email: safe.email,
+      role: safe.role,
+    })
     return { user: safe, token }
   }
 

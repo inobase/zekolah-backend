@@ -14,6 +14,11 @@ import path from 'path';
 import { config } from './config';
 import { errorHandler } from './middlewares/errorHandler';
 import { apiRoutes } from './routes';
+import { getKnex } from './config/database';
+import { RoleRepository } from './repositories/role.repository';
+import { UserRoleRepository } from './repositories/userRole.repository';
+import { RoleResolver } from './utils/roleResolver';
+import { ResolvedUserRole } from './models/interfaces/RoleInterfaces';
 
 // Declare JWT user type and authenticate decorator on Fastify
 declare module '@fastify/jwt' {
@@ -21,9 +26,24 @@ declare module '@fastify/jwt' {
     user: {
       id: number;
       email: string;
-      role?: string;
+      role?: string;            // legacy — kept during transition
       name?: string;
+      school_id?: number | null;
+      academic_year_id?: number | null;
+      // Resolved at auth time by app.authenticate (not from JWT payload):
+      roles?: ResolvedUserRole[];
+      activeSchoolId?: number | null;
+      activeAcademicYearId?: number | null;
     };
+  }
+}
+
+// Augmented Fastify request — adds resolved roles + active context
+declare module 'fastify' {
+  interface FastifyRequest {
+    resolvedRoles?: ResolvedUserRole[];
+    activeSchoolId?: number | null;
+    activeAcademicYearId?: number | null;
   }
 }
 
@@ -71,13 +91,42 @@ export const buildApp = async (overrides?: {
     prefix: '/uploads/',
   });
 
-  // JWT auth helper for routes
+  // JWT auth helper for routes — verifies token, resolves roles, injects req.user
   app.decorate('authenticate', async function (request: FastifyRequest, reply: FastifyReply) {
     try {
       await request.jwtVerify();
     } catch (_err) {
       reply.code(401).send({ error: 'Unauthorized', message: 'Invalid or expired token' });
+      return;
     }
+
+    // Determine active school/year context
+    // Priority: header > JWT payload > null
+    const headers = (request.headers as Record<string, string | undefined>);
+    const schoolId = headers?.['x-school-id']
+      ? parseInt(headers['x-school-id'], 10)
+      : undefined;
+    const academicYearId = headers?.['x-academic-year-id']
+      ? parseInt(headers['x-academic-year-id'], 10)
+      : undefined;
+
+    const ctxSchoolId = (schoolId ?? request.user.school_id ?? null) as number | null;
+    const ctxAYId = (academicYearId ?? request.user.academic_year_id ?? null) as number | null;
+
+    // Resolve roles (cached RoleResolver per request via singleton)
+    const knex = getKnex();
+    const roleResolver = new RoleResolver(new RoleRepository(knex), new UserRoleRepository(knex));
+    const resolvedRoles = await roleResolver.resolve(request.user.id, ctxSchoolId, ctxAYId);
+
+    // Augment request for downstream handlers
+    request.resolvedRoles = resolvedRoles;
+    request.activeSchoolId = ctxSchoolId;
+    request.activeAcademicYearId = ctxAYId;
+
+    // Augment user on the JWT-decoded object
+    request.user.roles = resolvedRoles;
+    request.user.activeSchoolId = ctxSchoolId;
+    request.user.activeAcademicYearId = ctxAYId;
   });
 
   // Global error handler

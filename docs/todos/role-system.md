@@ -24,10 +24,10 @@
 
 ## Phase 3 — Auth Middleware Integration
 
-- [ ] **T3.1** Baca current `src/middlewares/auth.ts` — pahami struktur existing
-- [ ] **T3.2** Update auth middleware — parse `school_id` dan `academic_year_id` dari cookie
-- [ ] **T3.3** Inject `roles`, `activeSchoolId`, `activeAcademicYearId` ke `req.user`
-- [ ] **T3.4** Verifikasi TypeScript types Fastify request augmentation bekerja
+- [x] **T3.1** Baca current `src/middlewares/auth.ts` — ada `app.authenticate` decorator di `app.ts` (via `@fastify/jwt` `jwtVerify`)
+- [x] **T3.2** Enhance `app.authenticate` di `app.ts` — parse `x-school-id` dan `x-academic-year-id` dari header, resolve active roles via `RoleResolver`
+- [x] **T3.3** Inject `roles`, `activeSchoolId`, `activeAcademicYearId` ke `request.user` (JWT-decoded) + `request` object
+- [x] **T3.4** Verifikasi TypeScript types — `resolvedRoles`, `activeSchoolId`, `activeAcademicYearId` ada di `FastifyRequest` declaration. `tsc --noEmit` clean (0 errors)
 
 ## Phase 4 — Routes & Controllers Refactor (Gradual)
 
@@ -75,3 +75,5 @@ _(Update di sini setiap kali mulai/stop/pause)_
 - 2026-07-16: Phase 1 PAUSED — menunggu user konfirmasi untuk lanjut Phase 2 atau jalankan migrate dulu.
 - 2026-07-16: **Phase 2 SELESAI** ✅ — T2.1-T2.5 DONE, `tsc --noEmit` clean (0 errors). File: RoleInterfaces, role.repo, userRole.repo, roleResolver, requireRole.
 - 2026-07-16: **Status: PAUSED** — menunggu user konfirmasi untuk lanjut Phase 3 (auth middleware integration) atau stop untuk commit Phase 2.
+- 2026-07-16: **Phase 3 SELESAI** ✅ — T3.1-T3.4 DONE. Enhanced `app.authenticate` di `app.ts` untuk: resolve roles via `RoleResolver`, inject `roles`, `activeSchoolId`, `activeAcademicYearId` ke `req.user` + `req`. Headers `x-school-id` + `x-academic-year-id` untuk switching context. `tsc --noEmit` clean (0 errors).
+- 2026-07-16: **Status: PAUSED** — menunggu user konfirmasi untuk lanjut Phase 4 (routes/controllers refactor) atau stop untuk commit Phase 3.
