@@ -15,6 +15,7 @@ import {
   UserDeleteResponseSchema,
   UserIdParamSchema,
 } from '../validators/user.validator'
+import { ContextHeadersSchema } from '../validators/common.validator'
 
 function bindHandler(handler: any) {
   return handler
@@ -31,7 +32,10 @@ export const userRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['users'],
         summary: 'List all users',
+        description:
+          'Returns paginated list of user accounts. Supports `search` and `status` filters.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         querystring: UserFilterSchema,
         response: { 200: PaginatedUsersResponseSchema },
       },
@@ -46,7 +50,10 @@ export const userRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['users'],
         summary: 'Create a new user',
+        description:
+          'Creates a user account with role. Optionally links to an existing school/student/teacher record.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         body: CreateUserSchema,
         response: { 201: UserResponseSchema },
       },
@@ -61,7 +68,9 @@ export const userRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['users'],
         summary: 'Get user by ID',
+        description: 'Returns user details including profile info and associated school.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: UserIdParamSchema,
         response: { 200: UserResponseSchema },
       },
@@ -76,7 +85,9 @@ export const userRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['users'],
         summary: 'Update user by ID',
+        description: 'Partial update — only provided fields are modified.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: UserIdParamSchema,
         body: UpdateUserSchema,
         response: { 200: UserResponseSchema },
@@ -92,7 +103,10 @@ export const userRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['users'],
         summary: 'Deactivate user by ID',
+        description:
+          'Soft-deletes a user account by setting status to inactive. Does not delete linked records.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: UserIdParamSchema,
         response: { 200: UserDeleteResponseSchema },
       },

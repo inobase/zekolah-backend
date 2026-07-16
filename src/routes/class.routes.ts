@@ -31,6 +31,8 @@ export const classRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['classes'],
         summary: 'List all classes',
+        description:
+          'Returns paginated list of classes. Supports `search` filter within a school.',
         security: [{ bearerAuth: [] }],
         querystring: ClassFilterSchema,
         response: { 200: PaginatedClassesResponseSchema },
@@ -46,6 +48,7 @@ export const classRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['classes'],
         summary: 'Get class by ID',
+        description: 'Returns class details including student and teacher counts.',
         security: [{ bearerAuth: [] }],
         params: ClassIdParamSchema,
         response: { 200: ClassResponseSchema },
@@ -61,6 +64,8 @@ export const classRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['classes'],
         summary: 'Create a new class',
+        description:
+          'Creates a class within a school. Assigns a class advisor teacher. `name` must be unique within the school.',
         security: [{ bearerAuth: [] }],
         body: CreateClassSchema,
         response: { 201: ClassResponseSchema },
@@ -76,6 +81,8 @@ export const classRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['classes'],
         summary: 'Update class by ID',
+        description:
+          'Partial update — only fields present in the body are modified.',
         security: [{ bearerAuth: [] }],
         params: ClassIdParamSchema,
         body: UpdateClassSchema,
@@ -92,6 +99,8 @@ export const classRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['classes'],
         summary: 'Delete class by ID',
+        description:
+          'Hard-deletes a class. Fails with 409 if students are still enrolled.',
         security: [{ bearerAuth: [] }],
         params: ClassIdParamSchema,
         response: { 204: ClassDeleteResponseSchema },

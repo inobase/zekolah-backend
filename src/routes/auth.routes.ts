@@ -34,6 +34,8 @@ export const authRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['auth'],
         summary: 'Register a new user',
+        description:
+          'Creates a user account and returns access + refresh tokens. Email must be unique.',
         body: RegisterSchema,
         response: {
           201: AuthTokenResponseSchema,
@@ -49,6 +51,8 @@ export const authRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['auth'],
         summary: 'Login and get JWT token',
+        description:
+          'Authenticates with email + password. Returns access token (15m) and refresh token (7d).',
         body: LoginSchema,
         response: {
           200: AuthTokenResponseSchema,
@@ -66,6 +70,8 @@ export const authRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['auth'],
         summary: 'Get current authenticated user',
+        description:
+          'Returns the authenticated user profile including school and roles.',
         security: [{ bearerAuth: [] }],
         response: {
           200: SafeUserSchema,
@@ -82,6 +88,8 @@ export const authRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['auth'],
         summary: 'Logout and revoke refresh tokens',
+        description:
+          'Revokes all refresh tokens for the current user. JWT remains valid until expiry.',
         security: [{ bearerAuth: [] }],
         response: {
           200: LogoutResponseSchema,

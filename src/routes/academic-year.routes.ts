@@ -16,6 +16,7 @@ import {
   AcademicYearIdParamSchema,
 } from '../validators/academic-year.validator'
 
+import { ContextHeadersSchema } from '../validators/common.validator';
 function bindHandler(handler: any) {
   return handler
 }
@@ -31,7 +32,10 @@ export const academicYearRoutes = async (app: FastifyZodInstance): Promise<void>
       schema: {
         tags: ['academic-years'],
         summary: 'List all academic years',
+        description:
+          'Returns paginated list of academic years for a school. Filter by `is_active`.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         querystring: AcademicYearFilterSchema,
         response: { 200: PaginatedAcademicYearsResponseSchema },
       },
@@ -46,7 +50,9 @@ export const academicYearRoutes = async (app: FastifyZodInstance): Promise<void>
       schema: {
         tags: ['academic-years'],
         summary: 'Get academic year by ID',
+        description: 'Returns academic year details.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: AcademicYearIdParamSchema,
         response: { 200: AcademicYearResponseSchema },
       },
@@ -61,7 +67,10 @@ export const academicYearRoutes = async (app: FastifyZodInstance): Promise<void>
       schema: {
         tags: ['academic-years'],
         summary: 'Create a new academic year',
+        description:
+          'Creates an academic year. Only one academic year per school can have `is_active=true`.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         body: CreateAcademicYearSchema,
         response: { 201: AcademicYearResponseSchema },
       },
@@ -76,7 +85,10 @@ export const academicYearRoutes = async (app: FastifyZodInstance): Promise<void>
       schema: {
         tags: ['academic-years'],
         summary: 'Update academic year by ID',
+        description:
+          'Partial update — only fields present in the body are modified.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: AcademicYearIdParamSchema,
         body: UpdateAcademicYearSchema,
         response: { 200: AcademicYearResponseSchema },
@@ -92,7 +104,10 @@ export const academicYearRoutes = async (app: FastifyZodInstance): Promise<void>
       schema: {
         tags: ['academic-years'],
         summary: 'Delete academic year by ID',
+        description:
+          'Hard-deletes an academic year. Fails if it has dependent records (classes, teaching assignments, grades).',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: AcademicYearIdParamSchema,
         response: { 204: AcademicYearDeleteResponseSchema },
       },

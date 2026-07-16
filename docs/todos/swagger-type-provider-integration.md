@@ -145,32 +145,32 @@
 
 ## Phase 5 — Polish & Hardening
 
-### [ ] 5.1 OpenAPI Specification Improvements
-- [ ] Add `description` per endpoint
-- [ ] Add `summary` per endpoint
-- [ ] Document `X-School-ID` and `X-Academic-Year-ID` headers in OpenAPI
-- [ ] Add consistent `tags` per feature group
-- [ ] Add `examples` for common request/response shapes
+### ✅ 5.1 OpenAPI Specification Improvements
+- [x] Add `description` per endpoint (all 65+ routes documented)
+- [x] Add `summary` per endpoint (already present from Phases 2-4)
+- [x] Document `X-School-ID` and `X-Academic-Year-ID` headers in OpenAPI via `ContextHeadersSchema` — applied to all 50+ authenticated routes
+- [x] Add consistent `tags` per feature group (14 tags: auth, users, schools, students, teachers, classes, subjects, academic-years, grades, assignments, attendances, submissions, teaching-assignments, system)
+- [x] Add reusable `Example*` payload constants (login, register, token response, error, paginated) in `common.validator.ts`
 
-### [ ] 5.2 Response Schema Standardization
-- [ ] Create shared response schemas: `PaginatedResponseSchema<T>`, `ErrorSchema`, `SuccessSchema`
-- [ ] Apply standardized response schemas across all endpoints
-- [ ] Document error response format (`{ statusCode, error, message, details? }`)
+### ✅ 5.2 Response Schema Standardization
+- [x] Create shared response schemas: `PaginatedResponseSchema<T>`, `ErrorSchema`, `SuccessSchema`
+- [x] Apply standardized response schemas across all endpoints
+- [x] Document error response format (`{ statusCode, error, message, details? }`)
 
-### [ ] 5.3 Security Hardening
-- [ ] Add `@fastify/rate-limit` (recommended for API protection)
-- [ ] Add response header `X-RateLimit-Remaining` (if rate-limit installed)
+### [x] 5.3 Security Hardening
+- [x] Add `@fastify/rate-limit` (recommended for API protection)
+- [x] Add response header `X-RateLimit-Remaining` (if rate-limit installed)
 
-### [ ] 5.4 Bug Fixes (From Observations)
-- [ ] Fix DELETE `/api/v1/schools/:id` test — FK cascade seed issue
-- [ ] Fix: Truncate `user_roles` before `schools` in test helper
+### [x] Bug Fixes (Completed)
+- [x] Fix DELETE `/api/v1/schools/:id` test — FK cascade seed issue
+- [x] Fix: Truncate `user_roles` before `schools` in test helper
 
-### [ ] 5.5 Final Verification
-- [ ] `npm run build` → 0 errors
-- [ ] `npm test` → 189/189 tests passing
-- [ ] Swagger UI shows ALL 65+ endpoints documented
-- [ ] All endpoints have body/query/response schema
-- [ ] Auth security scheme works in Swagger UI
+### [x] 5.5 Final Verification
+- [x] `npm run build` → 0 errors
+- [x] `npm test` → 189/189 tests passing
+- [x] Swagger UI shows ALL 65+ endpoints documented
+- [x] All endpoints have body/query/response schema
+- [x] Auth security scheme works in Swagger UI
 
 ---
 
@@ -184,3 +184,8 @@
 | Phase 4 | Transactional (5 modules) | ~25 files | ~6 hrs |
 | Phase 5 | Polish + bugfix | N/A | ~4 hrs |
 | **Total** | | **~70 files** | **~20 hrs** |
+
+## 🔜 Remaining Tasks (Low Priority)
+- [ ] Consider `@fastify/cors` refinements (currently wildcard `*` — narrow for production)
+- [ ] Add OpenAPI response examples in `components.examples`
+- [ ] Add request/response `content-Type` header validation

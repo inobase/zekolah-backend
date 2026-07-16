@@ -21,6 +21,9 @@ export async function createTestApp() {
   // Disable foreign key checks to avoid FK constraint violations on MySQL.
   await knex.raw('SET FOREIGN_KEY_CHECKS = 0');
   const tables = [
+    'refresh_tokens',
+    'user_roles',
+    'user_schools',
     'submissions',
     'assignments',
     'grades',
@@ -29,11 +32,11 @@ export async function createTestApp() {
     'class_students',
     'teachers',
     'students',
-    'subjects',
     'classes',
+    'class_subjects',
+    'subjects',
     'academic_years',
     'schools',
-    'refresh_tokens',
     'users',
   ];
   for (const table of tables) {

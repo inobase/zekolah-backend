@@ -16,6 +16,7 @@ import {
   SchoolIdParamSchema,
 } from '../validators/school.validator'
 
+import { ContextHeadersSchema } from '../validators/common.validator';
 function bindHandler(handler: any) {
   return handler
 }
@@ -31,7 +32,10 @@ export const schoolRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['schools'],
         summary: 'List all schools',
+        description:
+          'Returns a paginated list of schools. Supports `search`, `page`, `limit` query params.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         querystring: SchoolFilterSchema,
         response: { 200: PaginatedSchoolsResponseSchema },
       },
@@ -46,7 +50,9 @@ export const schoolRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['schools'],
         summary: 'Get school by ID',
+        description: 'Returns details for one school. Returns 404 if not found.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: SchoolIdParamSchema,
         response: { 200: SchoolResponseSchema },
       },
@@ -61,7 +67,10 @@ export const schoolRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['schools'],
         summary: 'Create a new school',
+        description:
+          'Creates a school record. `code` must be unique across the system.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         body: CreateSchoolSchema,
         response: { 201: SchoolResponseSchema },
       },
@@ -76,7 +85,10 @@ export const schoolRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['schools'],
         summary: 'Update school by ID',
+        description:
+          'Partial update — only fields present in the body are modified.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: SchoolIdParamSchema,
         body: UpdateSchoolSchema,
         response: { 200: SchoolResponseSchema },
@@ -92,7 +104,10 @@ export const schoolRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['schools'],
         summary: 'Delete school by ID',
+        description:
+          'Hard-deletes a school. Fails with 409 if dependent records exist (students, teachers, classes).',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: SchoolIdParamSchema,
         response: { 204: SchoolDeleteResponseSchema },
       },

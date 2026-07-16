@@ -7,6 +7,7 @@ import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
+import rateLimit from '@fastify/rate-limit';
 import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import swagger from '@fastify/swagger';
@@ -78,6 +79,16 @@ export const buildApp = async (overrides?: {
     origin: config.corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
+
+  // Rate limiting
+  await app.register(rateLimit, {
+    max: config.isProd ? 100 : 1000,
+    timeWindow: '1 minute',
+    keyGenerator: (request) => {
+      return request.ip ?? 'unknown';
+    },
+    hook: 'preParsing',
   });
 
   // JWT

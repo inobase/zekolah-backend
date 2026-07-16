@@ -16,6 +16,7 @@ import {
   SubmissionIdParamSchema,
 } from '../validators/submission.validator'
 
+import { ContextHeadersSchema } from '../validators/common.validator';
 function bindHandler(handler: any) {
   return handler
 }
@@ -31,7 +32,10 @@ export const submissionRoutes = async (app: FastifyZodInstance): Promise<void> =
       schema: {
         tags: ['submissions'],
         summary: 'List all submissions',
+        description:
+          'Returns paginated submissions. Filters by `assignment_id`, `student_id`, `status`.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         querystring: SubmissionFilterSchema,
         response: { 200: PaginatedSubmissionsResponseSchema },
       },
@@ -46,7 +50,9 @@ export const submissionRoutes = async (app: FastifyZodInstance): Promise<void> =
       schema: {
         tags: ['submissions'],
         summary: 'Get submission by ID',
+        description: 'Returns submission details including grade/score if graded.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: SubmissionIdParamSchema,
         response: { 200: SubmissionResponseSchema },
       },
@@ -61,7 +67,10 @@ export const submissionRoutes = async (app: FastifyZodInstance): Promise<void> =
       schema: {
         tags: ['submissions'],
         summary: 'Create a new submission',
+        description:
+          'Student submits work for an assignment. One submission per assignment per student.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         body: CreateSubmissionSchema,
         response: { 201: SubmissionResponseSchema },
       },
@@ -76,7 +85,10 @@ export const submissionRoutes = async (app: FastifyZodInstance): Promise<void> =
       schema: {
         tags: ['submissions'],
         summary: 'Update submission by ID',
+        description:
+          'Partial update. Teacher can set score and feedback via `grade` and `feedback`.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: SubmissionIdParamSchema,
         body: UpdateSubmissionSchema,
         response: { 200: SubmissionResponseSchema },
@@ -92,7 +104,9 @@ export const submissionRoutes = async (app: FastifyZodInstance): Promise<void> =
       schema: {
         tags: ['submissions'],
         summary: 'Delete submission',
+        description: 'Hard-deletes a submission record.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: SubmissionIdParamSchema,
         response: { 200: SubmissionDeleteResponseSchema },
       },

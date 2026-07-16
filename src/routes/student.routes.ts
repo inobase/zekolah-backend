@@ -16,6 +16,7 @@ import {
   StudentIdParamSchema,
 } from '../validators/student.validator'
 
+import { ContextHeadersSchema } from '../validators/common.validator';
 function bindHandler(handler: any) {
   return handler
 }
@@ -31,7 +32,10 @@ export const studentRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['students'],
         summary: 'List all students',
+        description:
+          'Returns a paginated list of students. Filters by `search`, `class_id`. Supports pagination.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         querystring: StudentFilterSchema,
         response: { 200: PaginatedStudentsResponseSchema },
       },
@@ -46,7 +50,9 @@ export const studentRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['students'],
         summary: 'Get student by ID',
+        description: 'Returns student details including user account info.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: StudentIdParamSchema,
         response: { 200: StudentResponseSchema },
       },
@@ -61,7 +67,10 @@ export const studentRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['students'],
         summary: 'Create a new student',
+        description:
+          'Creates a student record and associated user account with student role. Requires valid class_id.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         body: CreateStudentSchema,
         response: { 201: StudentResponseSchema },
       },
@@ -76,7 +85,10 @@ export const studentRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['students'],
         summary: 'Update student by ID',
+        description:
+          'Partial update — only fields present in the body are modified.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: StudentIdParamSchema,
         body: UpdateStudentSchema,
         response: { 200: StudentResponseSchema },
@@ -92,7 +104,10 @@ export const studentRoutes = async (app: FastifyZodInstance): Promise<void> => {
       schema: {
         tags: ['students'],
         summary: 'Delete student by ID',
+        description:
+          'Hard-deletes student and associated user account. Deletes class_student membership first.',
         security: [{ bearerAuth: [] }],
+        headers: ContextHeadersSchema,
         params: StudentIdParamSchema,
         response: { 204: StudentDeleteResponseSchema },
       },
