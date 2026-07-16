@@ -12,6 +12,7 @@
     "migrate:rollback": "node scripts/migrate.js rollback",
     "migrate:make": "knex migrate:make",
     "seed": "node scripts/migrate.js seed",
+    "db:check": "node scripts/check-tables.js",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write src/**/*.ts",
     "test": "vitest run",
