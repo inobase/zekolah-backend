@@ -11,7 +11,7 @@ const baseConfig = {
   },
   migrations: {
     tableName: 'migrations',
-    directory: path.join(__dirname, 'migrations'),
+    directory: path.join(__dirname, 'migrations', 'mysql'),
   },
   seeds: {
     directory: path.join(__dirname, 'seeds'),
