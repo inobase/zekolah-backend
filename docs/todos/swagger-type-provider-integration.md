@@ -21,11 +21,12 @@
 - [x] Tambahkan security scheme `bearerAuth`
 - [x] Tambahkan tags grouping per fitur (14 tags)
 
-### [ ] 1.3 Verify Setup
-- [ ] `/docs` accessible via browser (manual verification)
-- [ ] OpenAPI JSON spec available at `/documentation/json` (manual verification)
-- [ ] Empty spec (no routes documented yet — expected)
-- [ ] Auth security scheme visible in docs (manual verification)
+### ✅ 1.3 Verify Setup
+- [x] `/docs` accessible via browser → Swagger UI renders correctly (OAS 3.0.3, v1.0.5)
+- [x] OpenAPI JSON spec available at `/documentation/json` → valid JSON with all paths
+- [x] Empty spec (no routes documented yet — expected, no body/query/response schemas yet)
+- [x] Auth security scheme visible in docs → "Authorize" button present, bearerAuth configured
+- [x] All 65+ API routes registered in spec (paths populated)
 
 ---
 
