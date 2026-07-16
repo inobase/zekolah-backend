@@ -32,11 +32,11 @@
 
 | Modul | Status | Catatan |
 |-------|--------|---------|
-| TeachingAssignment | ⏳ Pending | Multi-FK + uniqueness constraint |
-| Attendance | ⏳ Pending | Filter date range, agregasi per siswa |
-| Assignment | ⏳ Pending | Relasi ke class+subject+teacher |
-| Submission | ⏳ Pending | File upload + grading + **Knex transaction** |
-| Grade | ⏳ Pending | Perhitungan nilai, grouping per assessment_type |
+| TeachingAssignment | ✅ Done | 6 file — Multi-FK + uniqueness constraint |
+| Attendance | ✅ Done | 6 file — Filter date range, agregasi per siswa |
+| Assignment | ✅ Done | 6 file — Relasi ke class+subject+teacher, hasDependents |
+| Submission | ✅ Done | 6 file — File upload + grading dengan auto-graded timestamp |
+| Grade | ✅ Done | 6 file — Score max validation, grouping per assessment_type |
 
 ---
 

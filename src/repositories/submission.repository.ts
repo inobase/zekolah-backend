@@ -1,0 +1,74 @@
+// =====================================================
+// Submission Repository
+// =====================================================
+
+import { Knex } from 'knex'
+import { Submission, SubmissionWithDetails } from '../models/interfaces/SubmissionInterfaces'
+
+export class SubmissionRepository {
+  constructor(private knex: Knex) {}
+
+  async findAll(filter: {
+    assignment_id?: number
+    student_id?: number
+    limit: number
+    offset: number
+  }): Promise<SubmissionWithDetails[]> {
+    let query = this.knex('submissions')
+      .join('assignments', 'submissions.assignment_id', 'assignments.id')
+      .join('students', 'submissions.student_id', 'students.id')
+      .join('users', 'students.user_id', 'users.id')
+      .select(
+        'submissions.*',
+        'assignments.title as assignment_title',
+        'students.nis',
+        'users.name as student_name'
+      )
+
+    if (filter.assignment_id) query = query.where('submissions.assignment_id', filter.assignment_id)
+    if (filter.student_id) query = query.where('submissions.student_id', filter.student_id)
+
+    return query.orderBy('submissions.submitted_at', 'desc').limit(filter.limit).offset(filter.offset)
+  }
+
+  async count(filter: {
+    assignment_id?: number
+    student_id?: number
+  }): Promise<number> {
+    let query = this.knex('submissions')
+    if (filter.assignment_id) query = query.where('submissions.assignment_id', filter.assignment_id)
+    if (filter.student_id) query = query.where('submissions.student_id', filter.student_id)
+    const result = await query.count({ count: '*' }).first() as { count: number }
+    return result?.count ?? 0
+  }
+
+  async findById(id: number): Promise<SubmissionWithDetails | null> {
+    const [row] = await this.knex('submissions')
+      .join('assignments', 'submissions.assignment_id', 'assignments.id')
+      .join('students', 'submissions.student_id', 'students.id')
+      .join('users', 'students.user_id', 'users.id')
+      .where('submissions.id', id)
+      .select(
+        'submissions.*',
+        'assignments.title as assignment_title',
+        'users.name as student_name',
+        'students.nis'
+      )
+    return row || null
+  }
+
+  async create(data: Partial<Submission>): Promise<number> {
+    const [id] = await this.knex('submissions').insert(data)
+    return id
+  }
+
+  async update(id: number, data: Partial<Submission>): Promise<boolean> {
+    const affected = await this.knex('submissions').where({ id }).update({ ...data, updated_at: new Date() })
+    return affected > 0
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const affected = await this.knex('submissions').where({ id }).del()
+    return affected > 0
+  }
+}
