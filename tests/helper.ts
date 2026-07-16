@@ -1,13 +1,12 @@
 // Test helper: build Fastify app, inject requests, cleanup after each test.
 import { buildApp } from '../src/app';
-import * as sqliteMigrations from '../migrations/sqlite';
 
 const openedApps: Awaited<ReturnType<typeof buildApp>>[] = [];
 
 async function ensureSchema(knex: import('knex').Knex) {
   const exists = await knex.schema.hasTable('users');
   if (!exists) {
-    await sqliteMigrations.up(knex);
+    await knex.migrate.latest();
   }
 }
 
@@ -19,7 +18,8 @@ export async function createTestApp() {
   await ensureSchema(knex);
 
   // Truncate all tables for isolation between tests.
-  // Order matters due to FKs (children first).
+  // Disable foreign key checks to avoid FK constraint violations on MySQL.
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 0');
   const tables = [
     'submissions',
     'assignments',
@@ -38,11 +38,12 @@ export async function createTestApp() {
   ];
   for (const table of tables) {
     try {
-      await knex(table).del();
+      await knex.raw(`TRUNCATE TABLE \`${table}\``);
     } catch {
       // ignore tables that don't exist yet
     }
   }
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 1');
 
   openedApps.push(app);
   return app;

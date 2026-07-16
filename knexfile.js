@@ -11,7 +11,7 @@ const baseConfig = {
   },
   migrations: {
     tableName: 'migrations',
-    directory: path.join(__dirname, 'migrations', 'mysql'),
+    directory: path.join(__dirname, 'migrations'),
   },
   seeds: {
     directory: path.join(__dirname, 'seeds'),
@@ -36,11 +36,17 @@ function knexConfig() {
     },
     test: {
       ...baseConfig,
-      client: 'better-sqlite3',
+      client: 'mysql2',
       connection: {
-        filename: ':memory:',
+        host: process.env.TEST_DB_HOST || process.env.DB_HOST || 'localhost',
+        port: Number(process.env.TEST_DB_PORT || process.env.DB_PORT) || 3306,
+        database: process.env.TEST_DB_NAME || 'zekolah-test',
+        user: process.env.TEST_DB_USER || process.env.DB_USER || 'root',
+        password: process.env.TEST_DB_PASS || process.env.DB_PASS || '',
+        charset: 'utf8mb4',
+        timezone: '+07:00',
+        dateStrings: true,
       },
-      useNullAsDefault: true,
     },
     production: {
       ...baseConfig,

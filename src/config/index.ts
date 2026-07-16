@@ -20,7 +20,7 @@ function loadEnv(): void {
     process.env.DB_PORT = '3306';
   }
   if (!process.env.DB_NAME) {
-    process.env.DB_NAME = 'zekolah';
+    process.env.DB_NAME = process.env.NODE_ENV === 'test' ? 'zekolah-test' : 'zekolah';
   }
 }
 
