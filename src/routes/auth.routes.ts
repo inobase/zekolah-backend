@@ -4,38 +4,90 @@
 // Protected endpoints: me, logout
 // =====================================================
 
-import { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { AuthController } from '../controllers/auth.controller'
-import { LoginSchema, RegisterSchema } from '../validators/auth.validator'
+import {
+  LoginSchema,
+  RegisterSchema,
+  AuthTokenResponseSchema,
+  LogoutResponseSchema,
+  SafeUserSchema,
+} from '../validators/auth.validator'
 
-export const authRoutes = async (app: FastifyInstance): Promise<void> => {
+// Helper to bind controller methods with zod type provider types
+function bindHandler(
+  handler: (req: any, reply: any) => Promise<any>
+): (req: any, reply: any) => Promise<any> {
+  return handler
+}
+
+export const authRoutes = async (app: FastifyZodInstance): Promise<void> => {
   const knex = getKnex()
   const controller = new AuthController(knex)
 
   // Public
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/register',
-    { preValidation: async (req) => { req.body = RegisterSchema.parse(req.body) } },
-    controller.register
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Register a new user',
+        body: RegisterSchema,
+        response: {
+          201: AuthTokenResponseSchema,
+        },
+      },
+    },
+    bindHandler(controller.register.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/login',
-    { preValidation: async (req) => { req.body = LoginSchema.parse(req.body) } },
-    controller.login
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Login and get JWT token',
+        body: LoginSchema,
+        response: {
+          200: AuthTokenResponseSchema,
+        },
+      },
+    },
+    bindHandler(controller.login.bind(controller))
   )
 
   // Protected
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/me',
-    { onRequest: [app.authenticate] },
-    controller.me
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['auth'],
+        summary: 'Get current authenticated user',
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: SafeUserSchema,
+        },
+      },
+    },
+    bindHandler(controller.me.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/logout',
-    { onRequest: [app.authenticate] },
-    controller.logout
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['auth'],
+        summary: 'Logout and revoke refresh tokens',
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: LogoutResponseSchema,
+        },
+      },
+    },
+    bindHandler(controller.logout.bind(controller))
   )
 }
