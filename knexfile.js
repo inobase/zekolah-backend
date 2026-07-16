@@ -1,4 +1,3 @@
-const { Knex } = require('knex');
 const path = require('path');
 
 const baseConfig = {
