@@ -8,24 +8,24 @@
 
 ## Phase 1 — Foundation
 
-### [ ] 1.1 Install Dependencies
-- [ ] Install `@fastify/swagger`
-- [ ] Install `@fastify/swagger-ui`
-- [ ] Install `fastify-type-provider-zod`
-- [ ] Add type declarations if needed
+### ✅ 1.1 Install Dependencies
+- [x] Install `@fastify/swagger@9.8.1`
+- [x] Install `@fastify/swagger-ui@5.2.6`
+- [x] Install `fastify-type-provider-zod@4.0.2`
+- [x] Type declarations compatible (Zod v3 + Fastify v5)
 
-### [ ] 1.2 Configure Plugins in `app.ts`
-- [ ] Register `swagger` plugin dengan OpenAPI 3.x config
-- [ ] Register `swaggerUi` plugin (prefix `/docs`)
-- [ ] Setup `validatorCompiler` dan `serializerCompiler` dari zod
-- [ ] Tambahkan security scheme `bearerAuth`
-- [ ] Tambahkan tags grouping per fitur
+### ✅ 1.2 Configure Plugins in `app.ts`
+- [x] Register `swagger` plugin dengan OpenAPI 3.x config
+- [x] Register `swaggerUi` plugin (prefix `/docs`)
+- [x] Setup `validatorCompiler` dan `serializerCompiler` dari zod
+- [x] Tambahkan security scheme `bearerAuth`
+- [x] Tambahkan tags grouping per fitur (14 tags)
 
 ### [ ] 1.3 Verify Setup
-- [ ] `/docs` accessible via browser
-- [ ] OpenAPI JSON spec available at `/documentation/json`
+- [ ] `/docs` accessible via browser (manual verification)
+- [ ] OpenAPI JSON spec available at `/documentation/json` (manual verification)
 - [ ] Empty spec (no routes documented yet — expected)
-- [ ] Auth security scheme visible in docs
+- [ ] Auth security scheme visible in docs (manual verification)
 
 ---
 

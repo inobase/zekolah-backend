@@ -9,6 +9,13 @@ import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+import {
+  validatorCompiler,
+  serializerCompiler,
+  jsonSchemaTransform,
+} from 'fastify-type-provider-zod';
 import path from 'path';
 
 import { config } from './config';
@@ -89,6 +96,58 @@ export const buildApp = async (overrides?: {
     root: path.join(__dirname, '../uploads'),
     prefix: '/uploads/',
   });
+
+  // Swagger / OpenAPI documentation
+  await app.register(swagger, {
+    openapi: {
+      info: {
+        title: 'Zekolah Backend API',
+        description: 'Educational Management System — API documentation',
+        version: '1.0.5',
+      },
+      servers: [
+        { url: 'http://localhost:3000', description: 'Development' },
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+      tags: [
+        { name: 'health', description: 'Health check endpoints' },
+        { name: 'auth', description: 'Authentication endpoints' },
+        { name: 'users', description: 'User management' },
+        { name: 'schools', description: 'School management' },
+        { name: 'students', description: 'Student management' },
+        { name: 'teachers', description: 'Teacher management' },
+        { name: 'classes', description: 'Class management' },
+        { name: 'subjects', description: 'Subject management' },
+        { name: 'academic-years', description: 'Academic year management' },
+        { name: 'attendances', description: 'Attendance tracking' },
+        { name: 'assignments', description: 'Assignment management' },
+        { name: 'submissions', description: 'Submission management' },
+        { name: 'grades', description: 'Grade management' },
+        { name: 'teaching-assignments', description: 'Teaching assignment management' },
+      ],
+    },
+    transform: jsonSchemaTransform,
+  });
+
+  await app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: true,
+    },
+  });
+
+  // Zod compilers
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
 
   // JWT auth helper for routes — verifies token, resolves roles, injects req.user
   app.decorate('authenticate', async function (request: FastifyRequest, reply: FastifyReply) {
