@@ -2,8 +2,20 @@ const path = require('path');
 const ADMIN_PASSWORD = require('bcryptjs').hashSync('Admin@12345', 10);
 
 exports.seed = async function (knex) {
-  // Clear tables (order matters due to FKs)
-  await knex('users').del();
+  // Clear tables (children-first to respect FK constraints)
+  const tables = [
+    'submissions', 'assignments', 'grades', 'attendance',
+    'teaching_assignments', 'class_students', 'teachers', 'students',
+    'subjects', 'classes', 'academic_years', 'schools', 'refresh_tokens',
+    'users',
+  ];
+  for (const table of tables) {
+    try {
+      await knex(table).del();
+    } catch {
+      // ignore tables that don't exist yet
+    }
+  }
   
   // Insert admin user
   await knex('users').insert({

@@ -10,6 +10,7 @@ import * as academicYears from './003_academic_years';
 import * as teachers from './004_teachers';
 import * as subjects from './005_subjects';
 import * as classes from './006_classes';
+import * as addClassAdvisor from './002_add_class_advisor_id';
 import * as students from './007_students';
 import * as classStudents from './008_class_students';
 import * as teachingAssignments from './009_teaching_assignments';
@@ -26,6 +27,7 @@ export const up = async (knex: import('knex').Knex): Promise<void> => {
   await teachers.up(knex);
   await subjects.up(knex);
   await classes.up(knex);
+  await addClassAdvisor.up(knex);
   await students.up(knex);
   await classStudents.up(knex);
   await teachingAssignments.up(knex);
@@ -45,6 +47,7 @@ export const down = async (knex: import('knex').Knex): Promise<void> => {
   await teachingAssignments.down(knex);
   await classStudents.down(knex);
   await students.down(knex);
+  await addClassAdvisor.down(knex);
   await classes.down(knex);
   await subjects.down(knex);
   await teachers.down(knex);
