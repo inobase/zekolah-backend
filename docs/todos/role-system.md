@@ -16,11 +16,11 @@
 
 ## Phase 2 — Helpers & Types
 
-- [ ] **T2.1** Buat `src/models/interfaces/RoleInterfaces.ts` — TypeScript interface untuk `Role`, `UserRole`, `UserRoleWithDetails`, dan Fastify request augmentation
-- [ ] **T2.2** Buat `src/repositories/role.repository.ts` — `findByName`, `findById`, `list`
-- [ ] **T2.3** Buat `src/repositories/userRole.repository.ts` — `findByUserId`, `findActive`, `insert`, `deactivate`, `delete`
-- [ ] **T2.4** Buat `src/utils/roleResolver.ts` — `resolveActiveRoles(userId, schoolId, academicYearId)` dengan filter `NULL = all`
-- [ ] **T2.5** Buat `src/middlewares/requireRole.ts` — guard middleware yang menerima single role atau array
+- [x] **T2.1** Buat `src/models/interfaces/RoleInterfaces.ts` — TypeScript interface untuk `Role`, `UserRole`, `UserRoleWithDetails`, `ResolvedUserRole`, `AugmentedUser`, dan Fastify request augmentation types
+- [x] **T2.2** Buat `src/repositories/role.repository.ts` — `findByName`, `findById`, `listAll`
+- [x] **T2.3** Buat `src/repositories/userRole.repository.ts` — `findByUserId`, `findActive`, `findById`, `insert`, `deactivate`, `delete`
+- [x] **T2.4** Buat `src/utils/roleResolver.ts` — `resolveActiveRoles`, `hasAnyRole`, `hasAllRoles`, `buildAugmentedUser`
+- [x] **T2.5** Buat `src/middlewares/requireRole.ts` — guard middleware yang menerima single role, array, atau custom predicate
 
 ## Phase 3 — Auth Middleware Integration
 
@@ -73,3 +73,5 @@ _(Update di sini setiap kali mulai/stop/pause)_
 - 2026-07-16: Phase 1 — T1.1 dan T1.2 selesai (file migration sudah dibuat). T1.3-T1.5 menunggu instruksi pengguna untuk jalankan `npm run migrate` (user pause/stop di sini).
 - 2026-07-16: Status Phase 1 — T1.1, T1.2 DONE di sisi kode (migration files). Migration belum di-apply ke DB. T1.3 opsional dilewati, T1.4 dan T1.5 tergantung hasil migrate.
 - 2026-07-16: Phase 1 PAUSED — menunggu user konfirmasi untuk lanjut Phase 2 atau jalankan migrate dulu.
+- 2026-07-16: **Phase 2 SELESAI** ✅ — T2.1-T2.5 DONE, `tsc --noEmit` clean (0 errors). File: RoleInterfaces, role.repo, userRole.repo, roleResolver, requireRole.
+- 2026-07-16: **Status: PAUSED** — menunggu user konfirmasi untuk lanjut Phase 3 (auth middleware integration) atau stop untuk commit Phase 2.
