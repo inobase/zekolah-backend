@@ -29,6 +29,35 @@ export const AttendanceFilterSchema = z.object({
   date_to: z.string().optional(),
 })
 
+// Response schemas
+export const AttendanceResponseSchema = z.object({
+  id: z.number(),
+  student_id: z.number(),
+  subject_id: z.number(),
+  date: z.any(),
+  status: z.enum(VALID_STATUSES),
+  created_at: z.any(),
+  updated_at: z.any(),
+})
+
+export const PaginatedAttendancesResponseSchema = z.object({
+  data: z.array(AttendanceResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+  }),
+})
+
+export const AttendanceDeleteResponseSchema = z.object({
+  message: z.string(),
+})
+
+export const AttendanceIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 export type CreateAttendanceInput = z.infer<typeof CreateAttendanceSchema>
 export type UpdateAttendanceInput = z.infer<typeof UpdateAttendanceSchema>
 export type AttendanceFilterInput = z.infer<typeof AttendanceFilterSchema>
+export type AttendanceResponse = z.infer<typeof AttendanceResponseSchema>

@@ -2,55 +2,101 @@
 // Grade Routes — Thin registration
 // =====================================================
 
-import { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { GradeController } from '../controllers/grade.controller'
 import {
   CreateGradeSchema,
   UpdateGradeSchema,
   GradeFilterSchema,
+  GradeResponseSchema,
+  PaginatedGradesResponseSchema,
+  GradeDeleteResponseSchema,
+  GradeIdParamSchema,
 } from '../validators/grade.validator'
 
-export const gradeRoutes = async (app: FastifyInstance): Promise<void> => {
+function bindHandler(handler: any) {
+  return handler
+}
+
+export const gradeRoutes = async (app: FastifyZodInstance): Promise<void> => {
   const knex = getKnex()
   const controller = new GradeController(knex)
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.query = GradeFilterSchema.parse(req.query) as typeof req.query },
+      schema: {
+        tags: ['grades'],
+        summary: 'List all grades',
+        security: [{ bearerAuth: [] }],
+        querystring: GradeFilterSchema,
+        response: { 200: PaginatedGradesResponseSchema },
+      },
     },
-    controller.list
+    bindHandler(controller.list.bind(controller))
   )
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.getById
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['grades'],
+        summary: 'Get grade by ID',
+        security: [{ bearerAuth: [] }],
+        params: GradeIdParamSchema,
+        response: { 200: GradeResponseSchema },
+      },
+    },
+    bindHandler(controller.getById.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = CreateGradeSchema.parse(req.body) },
+      schema: {
+        tags: ['grades'],
+        summary: 'Create a new grade',
+        security: [{ bearerAuth: [] }],
+        body: CreateGradeSchema,
+        response: { 201: GradeResponseSchema },
+      },
     },
-    controller.create
+    bindHandler(controller.create.bind(controller))
   )
 
-  app.patch(
+  app.withTypeProvider<ZodTypeProvider>().patch(
     '/:id',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = UpdateGradeSchema.parse(req.body) },
+      schema: {
+        tags: ['grades'],
+        summary: 'Update grade by ID',
+        security: [{ bearerAuth: [] }],
+        params: GradeIdParamSchema,
+        body: UpdateGradeSchema,
+        response: { 200: GradeResponseSchema },
+      },
     },
-    controller.update
+    bindHandler(controller.update.bind(controller))
   )
 
-  app.delete(
+  app.withTypeProvider<ZodTypeProvider>().delete(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.delete
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['grades'],
+        summary: 'Delete grade',
+        security: [{ bearerAuth: [] }],
+        params: GradeIdParamSchema,
+        response: { 200: GradeDeleteResponseSchema },
+      },
+    },
+    bindHandler(controller.delete.bind(controller))
   )
 }

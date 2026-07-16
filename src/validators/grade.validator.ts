@@ -30,6 +30,38 @@ export const GradeFilterSchema = z.object({
   assessment_type: z.enum(VALID_ASSESSMENT_TYPES).optional(),
 })
 
+// Response schemas
+export const GradeResponseSchema = z.object({
+  id: z.number(),
+  student_id: z.number(),
+  subject_id: z.number(),
+  academic_year_id: z.number(),
+  assessment_type: z.enum(VALID_ASSESSMENT_TYPES),
+  score: z.number(),
+  max_score: z.number(),
+  teacher_id: z.number().nullable(),
+  created_at: z.any(),
+  updated_at: z.any(),
+})
+
+export const PaginatedGradesResponseSchema = z.object({
+  data: z.array(GradeResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+  }),
+})
+
+export const GradeDeleteResponseSchema = z.object({
+  message: z.string(),
+})
+
+export const GradeIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 export type CreateGradeInput = z.infer<typeof CreateGradeSchema>
 export type UpdateGradeInput = z.infer<typeof UpdateGradeSchema>
 export type GradeFilterInput = z.infer<typeof GradeFilterSchema>
+export type GradeResponse = z.infer<typeof GradeResponseSchema>

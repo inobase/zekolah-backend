@@ -2,55 +2,101 @@
 // TeachingAssignment Routes — Thin registration
 // =====================================================
 
-import { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { TeachingAssignmentController } from '../controllers/teaching-assignment.controller'
 import {
   CreateTeachingAssignmentSchema,
   UpdateTeachingAssignmentSchema,
   TeachingAssignmentFilterSchema,
+  TeachingAssignmentResponseSchema,
+  PaginatedTeachingAssignmentsResponseSchema,
+  TeachingAssignmentDeleteResponseSchema,
+  TeachingAssignmentIdParamSchema,
 } from '../validators/teaching-assignment.validator'
 
-export const teachingAssignmentRoutes = async (app: FastifyInstance): Promise<void> => {
+function bindHandler(handler: any) {
+  return handler
+}
+
+export const teachingAssignmentRoutes = async (app: FastifyZodInstance): Promise<void> => {
   const knex = getKnex()
   const controller = new TeachingAssignmentController(knex)
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.query = TeachingAssignmentFilterSchema.parse(req.query) as typeof req.query },
+      schema: {
+        tags: ['teaching-assignments'],
+        summary: 'List all teaching assignments',
+        security: [{ bearerAuth: [] }],
+        querystring: TeachingAssignmentFilterSchema,
+        response: { 200: PaginatedTeachingAssignmentsResponseSchema },
+      },
     },
-    controller.list
+    bindHandler(controller.list.bind(controller))
   )
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.getById
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['teaching-assignments'],
+        summary: 'Get teaching assignment by ID',
+        security: [{ bearerAuth: [] }],
+        params: TeachingAssignmentIdParamSchema,
+        response: { 200: TeachingAssignmentResponseSchema },
+      },
+    },
+    bindHandler(controller.getById.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = CreateTeachingAssignmentSchema.parse(req.body) },
+      schema: {
+        tags: ['teaching-assignments'],
+        summary: 'Create a new teaching assignment',
+        security: [{ bearerAuth: [] }],
+        body: CreateTeachingAssignmentSchema,
+        response: { 201: TeachingAssignmentResponseSchema },
+      },
     },
-    controller.create
+    bindHandler(controller.create.bind(controller))
   )
 
-  app.patch(
+  app.withTypeProvider<ZodTypeProvider>().patch(
     '/:id',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = UpdateTeachingAssignmentSchema.parse(req.body) },
+      schema: {
+        tags: ['teaching-assignments'],
+        summary: 'Update teaching assignment by ID',
+        security: [{ bearerAuth: [] }],
+        params: TeachingAssignmentIdParamSchema,
+        body: UpdateTeachingAssignmentSchema,
+        response: { 200: TeachingAssignmentResponseSchema },
+      },
     },
-    controller.update
+    bindHandler(controller.update.bind(controller))
   )
 
-  app.delete(
+  app.withTypeProvider<ZodTypeProvider>().delete(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.delete
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['teaching-assignments'],
+        summary: 'Delete teaching assignment',
+        security: [{ bearerAuth: [] }],
+        params: TeachingAssignmentIdParamSchema,
+        response: { 200: TeachingAssignmentDeleteResponseSchema },
+      },
+    },
+    bindHandler(controller.delete.bind(controller))
   )
 }

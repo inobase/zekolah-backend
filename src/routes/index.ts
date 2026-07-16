@@ -2,7 +2,7 @@
 // API Routes
 // =====================================================
 
-import { FastifyInstance } from 'fastify';
+import { FastifyZodInstance } from '../types/fastify-zod';
 import { authRoutes } from './auth.routes';
 import { userRoutes } from './user.routes';
 import { schoolRoutes } from './school.routes';
@@ -17,7 +17,7 @@ import { submissionRoutes } from './submission.routes';
 import { gradeRoutes } from './grade.routes';
 import { teachingAssignmentRoutes } from './teaching-assignment.routes';
 
-export const apiRoutes = async (app: FastifyInstance): Promise<void> => {
+export const apiRoutes = async (app: FastifyZodInstance): Promise<void> => {
   // Health check
   app.get('/ping', async () => ({ pong: true }));
 

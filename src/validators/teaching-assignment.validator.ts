@@ -29,6 +29,35 @@ export const TeachingAssignmentFilterSchema = z.object({
   subject_id: z.coerce.number().int().positive().optional(),
 })
 
+// Response schemas
+export const TeachingAssignmentResponseSchema = z.object({
+  id: z.number(),
+  teacher_id: z.number(),
+  class_id: z.number(),
+  subject_id: z.number(),
+  academic_year_id: z.number(),
+  created_at: z.any(),
+  updated_at: z.any(),
+})
+
+export const PaginatedTeachingAssignmentsResponseSchema = z.object({
+  data: z.array(TeachingAssignmentResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+  }),
+})
+
+export const TeachingAssignmentDeleteResponseSchema = z.object({
+  message: z.string(),
+})
+
+export const TeachingAssignmentIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 export type CreateTeachingAssignmentInput = z.infer<typeof CreateTeachingAssignmentSchema>
 export type UpdateTeachingAssignmentInput = z.infer<typeof UpdateTeachingAssignmentSchema>
 export type TeachingAssignmentFilterInput = z.infer<typeof TeachingAssignmentFilterSchema>
+export type TeachingAssignmentResponse = z.infer<typeof TeachingAssignmentResponseSchema>

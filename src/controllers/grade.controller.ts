@@ -18,30 +18,24 @@ export class GradeController {
     this.service = new GradeService(knex)
   }
 
-  list = async (req: FastifyRequest, reply: FastifyReply) => {
-    const filter = req.query as GradeFilterInput
-    return reply.send(await this.service.list(filter))
+  list = async (req: FastifyRequest<{ Reply: unknown }>, reply: FastifyReply) => {
+    return reply.send(await this.service.list(req.query as GradeFilterInput))
   }
 
-  getById = async (req: FastifyRequest, reply: FastifyReply) => {
-    const { id } = req.params as { id: number }
-    return reply.send(await this.service.getById(Number(id)))
+  getById = async (req: FastifyRequest<{ Params: { id: number }; Reply: unknown }>, reply: FastifyReply) => {
+    return reply.send(await this.service.getById(req.params.id))
   }
 
-  create = async (req: FastifyRequest, reply: FastifyReply) => {
-    const body = req.body as CreateGradeInput
-    return reply.status(201).send(await this.service.create(body))
+  create = async (req: FastifyRequest<{ Body: CreateGradeInput; Reply: unknown }>, reply: FastifyReply) => {
+    return reply.status(201).send(await this.service.create(req.body))
   }
 
-  update = async (req: FastifyRequest, reply: FastifyReply) => {
-    const { id } = req.params as { id: number }
-    const body = req.body as UpdateGradeInput
-    return reply.send(await this.service.update(Number(id), body))
+  update = async (req: FastifyRequest<{ Params: { id: number }; Body: UpdateGradeInput; Reply: unknown }>, reply: FastifyReply) => {
+    return reply.send(await this.service.update(req.params.id, req.body))
   }
 
-  delete = async (req: FastifyRequest, reply: FastifyReply) => {
-    const { id } = req.params as { id: number }
-    await this.service.delete(Number(id))
+  delete = async (req: FastifyRequest<{ Params: { id: number }; Reply: unknown }>, reply: FastifyReply) => {
+    await this.service.delete(req.params.id)
     return reply.code(204).send({ message: 'Grade deleted' })
   }
 }

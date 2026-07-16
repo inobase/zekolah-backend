@@ -2,55 +2,101 @@
 // Submission Routes — Thin registration
 // =====================================================
 
-import { FastifyInstance } from 'fastify'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { SubmissionController } from '../controllers/submission.controller'
 import {
   CreateSubmissionSchema,
   UpdateSubmissionSchema,
   SubmissionFilterSchema,
+  SubmissionResponseSchema,
+  PaginatedSubmissionsResponseSchema,
+  SubmissionDeleteResponseSchema,
+  SubmissionIdParamSchema,
 } from '../validators/submission.validator'
 
-export const submissionRoutes = async (app: FastifyInstance): Promise<void> => {
+function bindHandler(handler: any) {
+  return handler
+}
+
+export const submissionRoutes = async (app: FastifyZodInstance): Promise<void> => {
   const knex = getKnex()
   const controller = new SubmissionController(knex)
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.query = SubmissionFilterSchema.parse(req.query) as typeof req.query },
+      schema: {
+        tags: ['submissions'],
+        summary: 'List all submissions',
+        security: [{ bearerAuth: [] }],
+        querystring: SubmissionFilterSchema,
+        response: { 200: PaginatedSubmissionsResponseSchema },
+      },
     },
-    controller.list
+    bindHandler(controller.list.bind(controller))
   )
 
-  app.get(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.getById
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['submissions'],
+        summary: 'Get submission by ID',
+        security: [{ bearerAuth: [] }],
+        params: SubmissionIdParamSchema,
+        response: { 200: SubmissionResponseSchema },
+      },
+    },
+    bindHandler(controller.getById.bind(controller))
   )
 
-  app.post(
+  app.withTypeProvider<ZodTypeProvider>().post(
     '/',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = CreateSubmissionSchema.parse(req.body) },
+      schema: {
+        tags: ['submissions'],
+        summary: 'Create a new submission',
+        security: [{ bearerAuth: [] }],
+        body: CreateSubmissionSchema,
+        response: { 201: SubmissionResponseSchema },
+      },
     },
-    controller.create
+    bindHandler(controller.create.bind(controller))
   )
 
-  app.patch(
+  app.withTypeProvider<ZodTypeProvider>().patch(
     '/:id',
     {
       onRequest: [app.authenticate],
-      preValidation: async (req) => { req.body = UpdateSubmissionSchema.parse(req.body) },
+      schema: {
+        tags: ['submissions'],
+        summary: 'Update submission by ID',
+        security: [{ bearerAuth: [] }],
+        params: SubmissionIdParamSchema,
+        body: UpdateSubmissionSchema,
+        response: { 200: SubmissionResponseSchema },
+      },
     },
-    controller.update
+    bindHandler(controller.update.bind(controller))
   )
 
-  app.delete(
+  app.withTypeProvider<ZodTypeProvider>().delete(
     '/:id',
-    { onRequest: [app.authenticate] },
-    controller.delete
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['submissions'],
+        summary: 'Delete submission',
+        security: [{ bearerAuth: [] }],
+        params: SubmissionIdParamSchema,
+        response: { 200: SubmissionDeleteResponseSchema },
+      },
+    },
+    bindHandler(controller.delete.bind(controller))
   )
 }
