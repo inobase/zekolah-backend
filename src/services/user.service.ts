@@ -81,7 +81,7 @@ export class UserService {
     const { email, password, name, role, phone, avatar_url, address } = body as {
       email: string; password: string; name: string; role?: string; phone?: string | null; avatar_url?: string | null; address?: string | null
     }
-    const created = await this.repo.create({ email, password, name, role, phone, avatar_url, address })
+    const created = await this.repo.create({ email, password, name, role: role || 'unknown', phone, avatar_url, address })
     return stripPassword(created) as SafeUser
   }
 

@@ -32,7 +32,8 @@ export class AssignmentRepository {
     if (filter.subject_id) query = query.where('assignments.subject_id', filter.subject_id)
     if (filter.teacher_id) query = query.where('assignments.teacher_id', filter.teacher_id)
 
-    return query.orderBy('assignments.due_date', 'asc').limit(filter.limit).offset(filter.offset)
+    const rows = await query.orderBy('assignments.due_date', 'asc').limit(filter.limit).offset(filter.offset)
+    return rows.map((r: any) => ({ ...r, max_score: Number(r.max_score) })) as AssignmentWithDetails[]
   }
 
   async count(filter: {
@@ -61,7 +62,8 @@ export class AssignmentRepository {
         'classes.name as class_name',
         'users.name as teacher_name'
       )
-    return row || null
+    if (!row) return null
+    return { ...row, max_score: Number(row.max_score) } as unknown as AssignmentWithDetails
   }
 
   async hasDependents(id: number): Promise<boolean> {

@@ -28,7 +28,11 @@ export class SubmissionRepository {
     if (filter.assignment_id) query = query.where('submissions.assignment_id', filter.assignment_id)
     if (filter.student_id) query = query.where('submissions.student_id', filter.student_id)
 
-    return query.orderBy('submissions.submitted_at', 'desc').limit(filter.limit).offset(filter.offset)
+    const rows = await query.orderBy('submissions.submitted_at', 'desc').limit(filter.limit).offset(filter.offset)
+    return rows.map((r: any) => ({
+      ...r,
+      score: r.score !== null && r.score !== undefined ? Number(r.score) : null,
+    })) as SubmissionWithDetails[]
   }
 
   async count(filter: {
@@ -54,7 +58,11 @@ export class SubmissionRepository {
         'users.name as student_name',
         'students.nis'
       )
-    return row || null
+    if (!row) return null
+    return {
+      ...row,
+      score: row.score !== null && row.score !== undefined ? Number(row.score) : null,
+    } as unknown as SubmissionWithDetails
   }
 
   async create(data: Partial<Submission>): Promise<number> {

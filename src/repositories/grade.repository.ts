@@ -31,7 +31,8 @@ export class GradeRepository {
     if (filter.subject_id) query = query.where('grades.subject_id', filter.subject_id)
     if (filter.assessment_type) query = query.where('grades.assessment_type', filter.assessment_type)
 
-    return query.limit(filter.limit).offset(filter.offset)
+    const rows = await query.limit(filter.limit).offset(filter.offset)
+    return rows.map((r: any) => ({ ...r, max_score: Number(r.max_score), score: Number(r.score) })) as GradeWithDetails[]
   }
 
   async count(filter: {
@@ -59,7 +60,8 @@ export class GradeRepository {
         'users.name as student_name',
         'students.nis'
       )
-    return row || null
+    if (!row) return null
+    return { ...row, max_score: Number(row.max_score), score: Number(row.score) } as unknown as GradeWithDetails
   }
 
   async create(data: Partial<Grade>): Promise<number> {

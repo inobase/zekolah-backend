@@ -7,6 +7,19 @@ import Knex, { Knex as KnexType } from 'knex';
 import { config } from '.';
 import { logger } from '../utils/logger';
 
+// Patch Knex whereLike to use utf8mb4_general_ci instead of utf8_bin.
+// Knex 3.x hardcodes 'COLLATE utf8_bin' which is not valid for utf8mb4 charset
+// and throws 'COLLATION utf8_bin is not valid for CHARACTER SET utf8mb4'.
+const MySQLQueryCompiler = require('knex/lib/dialects/mysql/query/mysql-querycompiler.js');
+if (MySQLQueryCompiler && MySQLQueryCompiler.prototype) {
+  const originalWhereLike = MySQLQueryCompiler.prototype.whereLike;
+  MySQLQueryCompiler.prototype.whereLike = function (statement: any) {
+    return originalWhereLike
+      .call(this, statement)
+      .replace('COLLATE utf8_bin', 'COLLATE utf8mb4_general_ci');
+  };
+}
+
 let knexInstance: KnexType | null = null;
 
 export const getKnex = (): KnexType => {
@@ -43,6 +56,7 @@ export const initDatabase = async (): Promise<void> => {
 export const closeDatabase = async (): Promise<void> => {
   if (knexInstance) {
     await knexInstance.destroy();
+    const isTest = process.env.NODE_ENV === 'test';
     if (!isTest) {
       logger.info('Database connection closed');
     }
