@@ -21,7 +21,7 @@ export class TeacherController {
   list = async (req: FastifyRequest, reply: FastifyReply) => {
     const query = req.query as TeacherFilterInput
     // Phase 1: enforce school isolation via activeSchoolId
-    const filter = { ...query, school_id: req.activeSchoolId }
+    const filter = { ...query, school_id: req.activeSchoolId ?? undefined } as TeacherFilterInput
     return reply.send(await this.service.list(filter))
   }
 

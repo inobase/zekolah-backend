@@ -21,7 +21,7 @@ export class StudentController {
   list = async (req: FastifyRequest, reply: FastifyReply) => {
     const query = req.query as StudentFilterInput
     // Phase 1: enforce school isolation via activeSchoolId (overrides query param)
-    const filter = { ...query, school_id: req.activeSchoolId }
+    const filter = { ...query, school_id: req.activeSchoolId ?? undefined } as StudentFilterInput
     return reply.send(await this.service.list(filter))
   }
 

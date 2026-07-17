@@ -20,7 +20,7 @@ export class GradeController {
 
   list = async (req: FastifyRequest<{ Reply: unknown }>, reply: FastifyReply) => {
     // Phase 2: enforce school isolation via activeSchoolId
-    const filter = { ...req.query, school_id: req.activeSchoolId } as GradeFilterInput
+    const filter = { ...(req.query as Record<string, unknown>), school_id: req.activeSchoolId ?? undefined } as GradeFilterInput
     return reply.send(await this.service.list(filter))
   }
 

@@ -20,7 +20,7 @@ export class AttendanceController {
 
   list = async (req: FastifyRequest<{ Reply: unknown }>, reply: FastifyReply) => {
     // Phase 2: enforce school isolation via activeSchoolId
-    const filter = { ...req.query, school_id: req.activeSchoolId } as AttendanceFilterInput
+    const filter = { ...(req.query as Record<string, unknown>), school_id: req.activeSchoolId ?? undefined } as AttendanceFilterInput
     return reply.send(await this.service.list(filter))
   }
 

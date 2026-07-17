@@ -19,11 +19,11 @@ export class SubjectService {
   }
 
   async list(filter: SubjectFilterInput): Promise<{ data: Subject[]; pagination: { page: number; limit: number; total: number } }> {
-    const { page, limit, search } = filter
+    const { page, limit, search, school_id } = filter
     const offset = (page - 1) * limit
     const [data, total] = await Promise.all([
-      this.repo.findAll({ search, limit, offset }),
-      this.repo.count({ search }),
+      this.repo.findAll({ search, limit, offset, school_id }),
+      this.repo.count({ search, school_id }),
     ])
     return { data, pagination: { page, limit, total } }
   }

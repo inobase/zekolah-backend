@@ -18,6 +18,7 @@ export const UpdateSubjectSchema = z.object({
 export const SubjectFilterSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
+  school_id: z.coerce.number().int().positive().optional(),
   search: z.string().max(100).optional(),
 })
 
