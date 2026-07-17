@@ -188,23 +188,29 @@
 ## 🔜 Remaining Tasks (Low Priority)
 
 ### 1. CORS Production Readiness
-- [x] Already using `CORS_ORIGIN` env var with `NODE_ENV` logic — defaults to `http://localhost:3001` in dev, configurable for production (no wildcard `*`)
-- [ ] Add explicit check: if `NODE_ENV !== 'production'` and `CORS_ORIGIN` not set → fallback to `*` for local dev convenience
+- [x] Implemented explicit logic in `src/config/index.ts`:
+  - `CORS_ORIGIN=*` → wildcard
+  - `NODE_ENV !== 'production'` + no `CORS_ORIGIN` → fallback to `['*']`
+  - `NODE_ENV=production` + no `CORS_ORIGIN` → defaults to `['http://localhost:3001']`
+  - Explicit env value → parsed as comma-separated list
+- [x] Updated `.env.example` with commented examples for dev/prod configurations
 
 ### 2. Add OpenAPI response examples in `components.examples`
-- [ ] Define reusable response examples for common patterns:
-  - `200 OK` success response (single item + paginated)
-  - `400 Bad Request` error response
-  - `401 Unauthorized` token expired/expired response
-  - `403 Forbidden` insufficient role
-  - `409 Conflict` duplicate email/school
-  - `422 Validation Error` with Zod error details
-  - `429 Too Many Requests` (rate-limit)
-- [ ] Wire examples into key endpoints: auth (register/login responses), schools (create/list)
-- [ ] Add request body examples: login payload, register payload, school create payload
+- [x] Added 7 reusable `components.examples` to swagger config:
+  - `LoginResponse`, `RegisterResponse`, `PaginatedSchool`
+  - `AuthError`, `ValidationError`, `ConflictError`, `ForbiddenError`
+- [x] Wired examples into key endpoints:
+  - `POST /auth/register` → bodyExample + `201Example`
+  - `POST /auth/login` → bodyExample + `200Example`
+  - `GET /auth/me` → 401 schema + `401Example`
+  - `GET /schools` → `200Example` 
+  - `POST /schools` → bodyExample + `201Example`
 
 ### 3. Add request/response `Content-Type` header validation
-- [ ] Add `application/json` Content-Type requirement for POST/PUT/PATCH endpoints
-- [ ] Validate response `Content-Type` header in Swagger docs
-- [ ] Return `415 Unsupported Media Type` if wrong Content-Type on request
-- [ ] Add `Accept` header documentation for GET endpoints
+- [x] Created `src/plugins/content-type-validator.ts` middleware:
+  - Enforces `application/json` for POST/PUT/PATCH
+  - Allows `multipart/form-data` for file uploads
+  - Returns `415 Unsupported Media Type` with descriptive error
+- [x] Registered plugin in `app.ts` before API routes
+- [x] Added `AcceptHeaderSchema` to `common.validator.ts`
+- [x] Applied `Accept` header documentation to `GET /auth/me`

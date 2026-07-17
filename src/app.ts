@@ -27,6 +27,7 @@ import { RoleRepository } from './repositories/role.repository';
 import { UserRoleRepository } from './repositories/userRole.repository';
 import { RoleResolver } from './utils/roleResolver';
 import { ResolvedUserRole } from './models/interfaces/RoleInterfaces';
+import contentTypeValidator from './plugins/content-type-validator';
 
 // Declare JWT user type and authenticate decorator on Fastify
 declare module '@fastify/jwt' {
@@ -127,6 +128,94 @@ export const buildApp = async (overrides?: {
             bearerFormat: 'JWT',
           },
         },
+        examples: {
+          LoginResponse: {
+            value: {
+              data: {
+                accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                user: {
+                  id: 1,
+                  username: 'admin',
+                  email: 'admin@zekolah.com',
+                  firstName: 'Administrator',
+                  lastName: 'User',
+                  roles: ['SUPERADMIN'],
+                },
+              },
+            },
+          },
+          RegisterResponse: {
+            value: {
+              data: {
+                id: 1,
+                username: 'guru_baru',
+                email: 'guru@sekolah.id',
+                firstName: 'Budi',
+                lastName: 'Setiawan',
+                roles: ['TEACHER'],
+                school: {
+                  id: 1,
+                  name: 'SDN 1 Maju Jaya',
+                  npsn: '12345678',
+                },
+                createdAt: '2026-07-17T08:00:00.000Z',
+              },
+            },
+          },
+          PaginatedSchool: {
+            value: {
+              data: [
+                {
+                  id: 1,
+                  name: 'SDN 1 Maju Jaya',
+                  npsn: '12345678',
+                  address: 'Jl. Merdeka No. 1',
+                  phone: '021-1234567',
+                  email: 'info@sdn1maju.sch.id',
+                  status: 'ACTIVE',
+                  createdAt: '2026-01-01T00:00:00.000Z',
+                },
+              ],
+              pagination: { page: 1, limit: 20, total: 1 },
+            },
+          },
+          AuthError: {
+            value: {
+              statusCode: 401,
+              error: 'Unauthorized',
+              message: 'Invalid or expired token',
+            },
+          },
+          ValidationError: {
+            value: {
+              statusCode: 400,
+              error: 'Bad Request',
+              message: 'Validation failed',
+              details: [
+                {
+                  message: 'string must contain fewer than 255 characters',
+                  path: ['email'],
+                  code: 'string.max',
+                },
+              ],
+            },
+          },
+          ConflictError: {
+            value: {
+              statusCode: 409,
+              error: 'Conflict',
+              message: 'Email sudah terdaftar',
+            },
+          },
+          ForbiddenError: {
+            value: {
+              statusCode: 403,
+              error: 'Forbidden',
+              message: 'Role SUPERADMIN diperlukan untuk operasi ini',
+            },
+          },
+        },
       },
       tags: [
         { name: 'health', description: 'Health check endpoints' },
@@ -208,6 +297,9 @@ export const buildApp = async (overrides?: {
     service: 'zekolah-backend',
     version: '1.0.0',
   }));
+
+  // Content-Type enforcement (before routes)
+  await app.register(contentTypeValidator);
 
   // API routes
   await app.register(apiRoutes, { prefix: '/api/v1' });

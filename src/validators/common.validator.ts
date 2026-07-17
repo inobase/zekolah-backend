@@ -14,6 +14,14 @@ export const ErrorResponseSchema = z.object({
 })
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>
 
+// ---------- Unauthorized error response ----------
+export const UnauthorizedResponseSchema = z.object({
+  statusCode: z.number(),
+  error: z.string(),
+  message: z.string(),
+})
+export type UnauthorizedResponse = z.infer<typeof UnauthorizedResponseSchema>
+
 // ---------- Success envelope (single item) ----------
 export const SuccessResponseSchema = <T extends z.ZodTypeAny>(data: T) =>
   z.object({
@@ -59,6 +67,12 @@ export const ContextHeadersSchema = z.object({
     .describe('Active academic year context for multi-tenant requests'),
 })
 export type ContextHeaders = z.infer<typeof ContextHeadersSchema>
+
+// ---------- Accept header ----------
+export const AcceptHeaderSchema = z.object({
+  accept: z.string().optional().default('application/json').describe('Expected response format'),
+})
+export type AcceptHeader = z.infer<typeof AcceptHeaderSchema>
 
 // ---------- Reusable OpenAPI example payloads ----------
 export const ExampleLoginPayload = {

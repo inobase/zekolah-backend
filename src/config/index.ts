@@ -53,7 +53,15 @@ export const config = {
   bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '10', 10),
 
   // CORS
-  corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:3001').split(','),
+  corsOrigins: (() => {
+    const origin = process.env.CORS_ORIGIN;
+    // Explicit wildcard in env
+    if (origin === '*') return ['*'];
+    // Non-production without explicit CORS_ORIGIN → allow all origins
+    if (process.env.NODE_ENV !== 'production' && !origin) return ['*'];
+    // Production or explicit origin list
+    return (origin || 'http://localhost:3001').split(',').map(s => s.trim());
+  })(),
 
   // Logging
   logLevel: (process.env.LOG_LEVEL || 'info') as 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace' | 'silent',
