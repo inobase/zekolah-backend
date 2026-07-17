@@ -80,7 +80,7 @@ export class UserRoleRepository {
   }
 
   /** Insert a role assignment */
-  async insert(data: AssignRoleInput): Promise<number> {
+  async insert(data: AssignRoleInput): Promise<UserRole> {
     const [id] = await this.knex('user_roles').insert({
       ...data,
       school_id: data.school_id ?? null,
@@ -88,7 +88,77 @@ export class UserRoleRepository {
       is_active: true,
       granted_at: new Date().toISOString(),
     })
-    return Number(id)
+    return (await this.knex('user_roles').where({ id }).first()) as unknown as UserRole
+  }
+
+  /** Find all active role assignments for a user with role details */
+  async findAllForUser(
+    userId: number,
+    isActive: boolean | null = null
+  ): Promise<UserRoleWithDetails[]> {
+    const q = this.knex('user_roles')
+      .join('roles', 'user_roles.role_id', 'roles.id')
+      .where('user_roles.user_id', userId)
+      .select(
+        'user_roles.*',
+        'roles.name as role_name',
+        'roles.description as role_description'
+      )
+      .orderBy('user_roles.created_at', 'desc')
+
+    if (isActive !== null) {
+      q.andWhere('user_roles.is_active', isActive)
+    }
+
+    return (await q) as unknown as UserRoleWithDetails[]
+  }
+
+  /** Find all role assignments within a school (admin view) */
+  async findAllScoped(
+    schoolId: number,
+    opts: {
+      userId?: number
+      isActive?: boolean | null
+    } = {}
+  ): Promise<UserRoleWithDetails[]> {
+    const q = this.knex('user_roles')
+      .join('roles', 'user_roles.role_id', 'roles.id')
+      .where('user_roles.school_id', schoolId)
+      .select(
+        'user_roles.*',
+        'roles.name as role_name',
+        'roles.description as role_description'
+      )
+      .orderBy('user_roles.created_at', 'desc')
+
+    if (opts.userId !== undefined) {
+      q.andWhere('user_roles.user_id', opts.userId)
+    }
+    if (opts.isActive !== null) {
+      q.andWhere('user_roles.is_active', opts.isActive)
+    }
+
+    return (await q) as unknown as UserRoleWithDetails[]
+  }
+
+  /** Find a role assignment by user_id, role_id, school_id, academic_year_id */
+  async findByAssignment(
+    userId: number,
+    roleId: number,
+    schoolId: number | null,
+    academicYearId: number | null
+  ): Promise<UserRole | null> {
+    const where: Record<string, unknown> = {
+      user_id: userId,
+      role_id: roleId,
+    }
+    if (schoolId !== null) where.school_id = schoolId
+    else where.school_id = null
+    if (academicYearId !== null) where.academic_year_id = academicYearId
+    else where.academic_year_id = null
+
+    const row = await this.knex('user_roles').where(where).first()
+    return (row ?? null) as unknown as UserRole | null
   }
 
   /** Deactivate a role assignment (soft remove) */

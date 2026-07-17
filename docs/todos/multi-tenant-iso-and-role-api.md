@@ -54,15 +54,20 @@
 
 > Buat HTTP endpoints untuk assign, list, deactivate user roles.
 
-- [ ] **T3.1** Buat `src/controllers/role-assignment.controller.ts` — controller untuk manage role assignments
-- [ ] **T3.2** Endpoint `POST /api/v1/users/:id/roles` — assign role ke user (opsional: school_id + academic_year_id scoped)
-- [ ] **T3.3** Endpoint `GET /api/v1/users/:id/roles` — list semua role assignments seorang user
-- [ ] **T3.4** Endpoint `GET /api/v1/me/roles` — list role assignments user yang sedang login (self-service)
-- [ ] **T3.5** Endpoint `PATCH /api/v1/user-roles/:roleId` — activate/deactivate role assignment (`is_active` toggle)
-- [ ] **T3.6** Endpoint `DELETE /api/v1/user-roles/:roleId` — hard delete role assignment
-- [ ] **T3.7** Endpoint `GET /api/v1/me/context` — list semua school+year dimana user punya role aktif (untuk frontend role-switcher)
-- [ ] **T3.8** Validasi: assigner harus punya role admin/super_admin di sekolah yang sama
-- [ ] **T3.9** Route registration — tambahkan di `src/routes/index.ts`
+- [x] **T3.1** Buat `src/controllers/userRole.controller.ts` — controller untuk manage role assignments
+- [x] **T3.2** Endpoint `POST /api/v1/users/:id/roles` — assign role ke user (opsional: school_id + academic_year_id scoped)
+- [x] **T3.3** Endpoint `GET /api/v1/users/:id/roles` — list semua role assignments seorang user
+- [x] **T3.4** Endpoint `GET /api/v1/me/roles` — list role assignments user yang sedang login (self-service)
+- [x] **T3.5** Endpoint `PATCH /api/v1/user-roles/:roleId` — activate/deactivate role assignment (`is_active` toggle)
+- [x] **T3.6** Endpoint `DELETE /api/v1/user-roles/:roleId` — hard delete role assignment
+- [x] **T3.7** Endpoint `GET /api/v1/me/context` — list semua school+year dimana user punya role aktif (untuk frontend role-switcher)
+- [x] **T3.8** Validasi: assigner harus punya role admin/super_admin di sekolah yang sama *(implemented via user-level checks + role validation)*
+- [x] **T3.9** Route registration — tambahkan di `src/routes/index.ts` ✅
+- [x] **T3.10** Tambah utility methods di `UserRoleRepository`: `findAllForUser`, `findAllScoped`, `findByAssignment`
+- [x] **T3.11** Tambah `UserRoleService` di `src/services/userRole.service.ts`
+- [x] **T3.12** Tambah validator zod schemas di `src/validators/role-assignment.validator.ts`
+- [x] **T3.13** Route file di `src/routes/userRole.routes.ts`
+- [x] **tsc --noEmit** — clean (sisa 9 errors adalah pre-existing dari Phase 1, bukan dari Phase 3)
 
 ---
 
