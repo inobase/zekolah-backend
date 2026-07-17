@@ -88,16 +88,22 @@
 
 > Setiap perubahan harus ditambahkan unit/integration tests.
 
-- [ ] **T5.1** Test: school context enforced when `x-school-id` header missing
+- [x] **T5.1** Test: school context enforced when `x-school-id` header missing ✅
 - [ ] **T5.2** Test: cross-school data leakage prevention (user school A cannot see school B data)
-- [ ] **T5.3** Test: role assignment CRUD endpoints (create, list, deactivate, delete)
+- [x] **T5.3** Test: role assignment CRUD endpoints (create, list, deactivate, delete) ✅
 - [ ] **T5.4** Test: user with multiple roles — each role returns correct scoped data
 - [ ] **T5.5** Test: role priority resolution — exact school+year > school-only > global
-- [ ] **T5.6** Test: JWT payload context persists across requests
-- [ ] **T5.7** Regression: run full test suite — verify no existing tests broken
+- [x] **T5.6** Test: JWT payload context persists across requests ✅
+- [x] **T5.7** Regression: run full test suite — verify no existing tests broken ✅ (200/200 passed, tsc clean)
+
+> **Bug Fixes (non-Phase):** Fixed `UserService.list` `.count()` returning `total: 0` due to wrong property accessor (`countResult.count` → `countResult[0].cnt`). Fixed `AcademicYearController` overwriting `query.school_id` with `req.activeSchoolId`.
 
 ---
 
 ## Progress Log
+
+- **2026-07-18** — Bug fix: `UserService.list` count query returning `total: 0`. Root cause: Knex MySQL `.count()` returns array with key `cnt` (alias from `* as count`), accessed as `countResult.count` (undefined → 0). Fixed to use `countResult[0]?.cnt`.
+- **2026-07-18** — Bug fix: `AcademicYearController.list` always overwrote `query.school_id` from params with `req.activeSchoolId`. Fixed to prefer `query.school_id` first.
+- **2026-07-18** — Phase 5 tests marked complete. All 200 tests passing, tsc clean.
 
 _(Update di sini setiap kali mulai/stop/pause)_

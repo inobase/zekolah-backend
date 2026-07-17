@@ -61,7 +61,7 @@ export const userRoleRoutes = async (app: FastifyZodInstance): Promise<void> => 
 
   // PATCH /user-roles/:roleId — activate/deactivate role assignment
   app.patch(
-    '/user-roles/:roleId',
+    '/:roleId',
     { preValidation: [app.authenticate] },
     async (req: FastifyRequest, reply: FastifyReply) => {
       return controller.update(req, reply)
@@ -70,7 +70,7 @@ export const userRoleRoutes = async (app: FastifyZodInstance): Promise<void> => 
 
   // DELETE /user-roles/:roleId — hard delete role assignment
   app.delete(
-    '/user-roles/:roleId',
+    '/:roleId',
     { preValidation: [app.authenticate] },
     async (req: FastifyRequest, reply: FastifyReply) => {
       return controller.remove(req, reply)

@@ -65,30 +65,31 @@ export class UserService {
       if (status) q.where('users.status', status)
     }
 
-    let countResult
+    let totalCount: number
     if (filter.school_id) {
       // Count via teachers table to apply school filter
       const rawCount = await this.knex('teachers')
         .join('users', 'teachers.user_id', 'users.id')
         .where('teachers.school_id', filter.school_id)
-        .count<{ count: string }[]>('* as count')
-      countResult = rawCount[0]
+        .count('* as cnt')
+      totalCount = Number(rawCount[0]?.cnt ?? 0)
     } else {
-      countResult = await this.knex('users')
-        .count<{ count: string }[]>('* as count')
-        .modify((qb) => {
-          if (search) {
-            qb.where((b: any) => b.whereLike('name', `%${search}%`).orWhereLike('email', `%${search}%`))
-          }
-          if (status) qb.where({ status })
-        })
+      let countQB = this.knex('users').count('* as cnt')
+      if (search) {
+        countQB.where((b: any) => b.whereLike('name', `%${search}%`).orWhereLike('email', `%${search}%`))
+      }
+      if (status) {
+        countQB = countQB.where({ status })
+      }
+      const countResult = await countQB
+      totalCount = Number(countResult[0]?.cnt ?? 0)
     }
 
     q.limit(limit).offset(offset)
     const rows = await q
     return {
       data: rows.map((u: any) => stripPassword(u) as SafeUser),
-      pagination: { page, limit, total: Number(countResult?.count ?? 0) },
+      pagination: { page, limit, total: totalCount },
     }
   }
 

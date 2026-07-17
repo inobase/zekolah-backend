@@ -20,8 +20,11 @@ export class AcademicYearController {
 
   list = async (req: FastifyRequest, reply: FastifyReply) => {
     const query = req.query as AcademicYearFilterInput
-    // Phase 1: enforce school isolation via activeSchoolId
-    const filter = { ...query, school_id: req.activeSchoolId ?? undefined } as AcademicYearFilterInput
+    // Phase 1: preserve query.school_id, fallback to activeSchoolId context
+    const filter = {
+      ...query,
+      school_id: query.school_id ?? (req.activeSchoolId ?? undefined),
+    } as AcademicYearFilterInput
     return reply.send(await this.service.list(filter))
   }
 
