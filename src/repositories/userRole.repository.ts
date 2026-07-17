@@ -161,6 +161,47 @@ export class UserRoleRepository {
     return (row ?? null) as unknown as UserRole | null
   }
 
+  /**
+   * Get ALL active role assignments for a user (across all schools/Years).
+   * Used during login to populate JWT payload with context.
+   */
+  async findAllActiveForUser(
+    userId: number
+  ): Promise<ResolvedUserRole[]> {
+    const result = await this.knex.raw(
+      `
+      SELECT
+        r.name as role,
+        ur.school_id,
+        ur.academic_year_id,
+        ur.is_active
+      FROM user_roles ur
+      JOIN roles r ON r.id = ur.role_id
+      WHERE ur.user_id = ? AND ur.is_active = 1
+      ORDER BY
+        CASE WHEN ur.school_id IS NOT NULL THEN 0 ELSE 1 END,
+        CASE WHEN ur.academic_year_id IS NOT NULL THEN 0 ELSE 1 END,
+        ur.school_id
+      `,
+      [userId]
+    ) as any[]
+
+    if (!Array.isArray(result[0])) return []
+    const rows = result[0] as Array<{
+      role: string
+      school_id: number | null
+      academic_year_id: number | null
+      is_active: number | boolean
+    }>
+
+    return rows.map((r) => ({
+      role: r.role,
+      school_id: r.school_id,
+      academic_year_id: r.academic_year_id,
+      is_active: r.is_active === 1 || r.is_active === true,
+    })) as unknown as ResolvedUserRole[]
+  }
+
   /** Deactivate a role assignment (soft remove) */
   async deactivate(userRoleId: number): Promise<void> {
     await this.knex('user_roles')

@@ -8,6 +8,7 @@ import { FastifyInstance } from 'fastify'
 import { config } from '../config'
 import { AppError } from '../utils/AppError'
 import { UserRepository } from '../repositories/user.repository'
+import { UserRoleRepository } from '../repositories/userRole.repository'
 import { AuthUser, AuthTokenResponse, SafeUser } from '../models/interfaces/AuthInterfaces'
 import { LoginInput, RegisterInput, RefreshInput } from '../validators/auth.validator'
 
@@ -40,7 +41,14 @@ export class AuthService {
     })
 
     const safe = this.stripPassword(user)
-    const token = app.jwt.sign({ id: safe.id, email: safe.email })
+    // Phase 4: new registrants typically have no roles yet, so no context
+    const tokenPayload = {
+      id: safe.id,
+      email: safe.email,
+      school_id: null as number | null,
+      academic_year_id: null as number | null,
+    }
+    const token = app.jwt.sign(tokenPayload)
     return { user: safe, token }
   }
 
@@ -61,8 +69,32 @@ export class AuthService {
 
     await this.userRepo.updateLastLogin(user.id)
 
+    // Phase 4: resolve roles + school/year context for JWT payload
+    const userRoleRepo = new UserRoleRepository(this.knex)
+    const allRoles = await userRoleRepo.findAllActiveForUser(user.id)
+    // Pick highest-priority context: prefer non-null school_id + academic_year_id
+    let ctxSchoolId: number | null = null
+    let ctxAYId: number | null = null
+    for (const role of allRoles) {
+      if (role.school_id != null && role.academic_year_id != null) {
+        ctxSchoolId = role.school_id
+        ctxAYId = role.academic_year_id
+        break
+      }
+      if (ctxSchoolId == null && role.school_id != null) {
+        ctxSchoolId = role.school_id
+      }
+    }
+
     const safe = this.stripPassword(user)
-    const token = app.jwt.sign({ id: safe.id, email: safe.email })
+    const tokenPayload = {
+      id: safe.id,
+      email: safe.email,
+      school_id: ctxSchoolId,
+      academic_year_id: ctxAYId,
+      roles: allRoles.map((r) => ({ role: r.role, school_id: r.school_id, academic_year_id: r.academic_year_id })),
+    }
+    const token = app.jwt.sign(tokenPayload)
     return { user: safe, token }
   }
 

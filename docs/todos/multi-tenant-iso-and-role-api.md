@@ -75,12 +75,12 @@
 
 > Masukkan `school_id` dan `academic_year_id` ke JWT payload agar context persist across requests tanpa selalu bergantung pada header.
 
-- [ ] **T4.1** Update `AuthUser` interface — tambahkan `school_id?: number` dan `academic_year_id?: number`
-- [ ] **T4.2** Update `AuthService.login` — inject resolved roles + active school/year ke JWT payload
-- [ ] **T4.3** Update `AuthService.register` — sama seperti login, tambahkan context ke payload
-- [ ] **T4.4** Update `app.ts` authenticate decorator —优先使用 JWT payload context, fallback ke header
-- [ ] **T4.5** `tsc --noEmit` — verify no type errors
-- [ ] **T4.6** Update tests — verify login/register response includes context info
+- [x] **T4.1** Update FastifyJWT user interface — `school_id` + `academic_year_id` sudah tersedia dari Phase 3 ✅
+- [x] **T4.2** Update `AuthService.login` — inject resolved roles + active school/year ke JWT payload ✅
+- [x] **T4.3** Update `AuthService.register` — inject `school_id: null, academic_year_id: null` ke JWT payload ✅
+- [x] **T4.4** `app.ts` authenticate decorator — sudah prefer JWT payload context, fallback ke header ✅ (no changes needed)
+- [x] **T4.5** `tsc --noEmit` — verify no type errors ✅
+- [ ] **T4.6** Update tests — verify login/register response includes context info (deferred to Phase 5) (deferred to Phase 5)
 
 ---
 
