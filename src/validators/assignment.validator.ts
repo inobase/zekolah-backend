@@ -30,6 +30,7 @@ export const AssignmentFilterSchema = z.object({
   class_id: z.coerce.number().int().positive().optional(),
   subject_id: z.coerce.number().int().positive().optional(),
   teacher_id: z.coerce.number().int().positive().optional(),
+  school_id: z.coerce.number().int().positive().optional(),
 })
 
 // Response schemas

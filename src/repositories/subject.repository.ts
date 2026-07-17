@@ -10,19 +10,19 @@ export class SubjectRepository {
 
   async findAll(filter: { search?: string; limit: number; offset: number; school_id?: number }): Promise<Subject[]> {
     const q = this.knex('subjects').select('*')
+    if (filter.school_id !== undefined && filter.school_id !== null) q.where({ school_id: filter.school_id })
     if (filter.search) {
       q.where((qb) => qb.whereLike('name', `%${filter.search}%`).orWhereLike('code', `%${filter.search}%`))
     }
-    if (filter.school_id) q.where({ school_id: filter.school_id })
     return q.orderBy('name').limit(filter.limit).offset(filter.offset)
   }
 
   async count(filter: { search?: string; school_id?: number }): Promise<number> {
     const q = this.knex('subjects').count<{ count: string }[]>('* as count').first()
+    if (filter.school_id !== undefined && filter.school_id !== null) q.where({ school_id: filter.school_id })
     if (filter.search) {
       q.where((qb: any) => qb.whereLike('name', `%${filter.search}%`).orWhereLike('code', `%${filter.search}%`))
     }
-    if (filter.school_id) q.where({ school_id: filter.school_id })
     const result = await q
     return Number((result as any)?.count ?? 0)
   }

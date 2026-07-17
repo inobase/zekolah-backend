@@ -28,6 +28,7 @@ export const GradeFilterSchema = z.object({
   student_id: z.coerce.number().int().positive().optional(),
   subject_id: z.coerce.number().int().positive().optional(),
   assessment_type: z.enum(VALID_ASSESSMENT_TYPES).optional(),
+  school_id: z.coerce.number().int().positive().optional(),
 })
 
 // Response schemas

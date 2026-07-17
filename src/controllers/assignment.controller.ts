@@ -19,9 +19,8 @@ export class AssignmentController {
   }
 
   list = async (req: FastifyRequest<{ Reply: unknown }>, reply: FastifyReply) => {
-    // Phase 1: pass activeSchoolId into filter (Phase 2 will add repo support for school_id)
-    const query = req.query as AssignmentFilterInput
-    const filter = { ...query, school_id: req.activeSchoolId } as AssignmentFilterInput
+    // Phase 2: enforce school isolation via activeSchoolId
+    const filter = { ...req.query, school_id: req.activeSchoolId } as AssignmentFilterInput
     return reply.send(await this.service.list(filter))
   }
 

@@ -2,7 +2,7 @@
 
 > **Source:** [docs/observations/2026-07-17_multi_tenant_multi_role_observasi.md](../observations/2026-07-17_multi_tenant_multi_role_observasi.md)
 > **Created:** 2026-07-17
-> **Status:** Not started
+> **Status:** ✅ Phase 1 & 2 Complete — All repositories now enforce school isolation
 
 ---
 
@@ -30,23 +30,23 @@
 
 > Tambahkan filter `school_id` di semua repository yang belum support isolasi sekolah.
 
-- [ ] **T2.1** `StudentRepository.findAll` — sudah support `school_id` filter ✅
-- [ ] **T2.2** `StudentRepository.count` — sudah support `school_id` filter ✅
-- [ ] **T2.3** `TeacherRepository.findAll` — sudah support `school_id` filter ✅
-- [ ] **T2.4** `TeacherRepository.count` — sudah support `school_id` filter ✅
-- [ ] **T2.5** `ClassRepository.findAll` — tambahkan `school_id` + `academic_year_id` filter
-- [ ] **T2.6** `ClassRepository.count` — tambahkan `school_id` + `academic_year_id` filter
-- [ ] **T2.7** `SubjectRepository.findAll` — tambahkan `school_id` filter
-- [ ] **T2.8** `SubjectRepository.count` — tambahkan `school_id` filter
-- [ ] **T2.9** `AssignmentRepository.findAll` — tambahkan `school_id` filter (JOIN via classes atau assignments.school_id)
-- [ ] **T2.10** `AssignmentRepository.count` — tambahkan `school_id` filter
-- [ ] **T2.11** `GradeRepository.findAll` — tambahkan `school_id` filter (JOIN via students atau grades.school_id)
-- [ ] **T2.12** `GradeRepository.count` — tambahkan `school_id` filter
-- [ ] **T2.13** `AttendanceRepository.findAll` — tambahkan `school_id` filter (JOIN via students atau attendance.school_id)
-- [ ] **T2.14** `AttendanceRepository.count` — tambahkan `school_id` filter
-- [ ] **T2.15** `SubmissionRepository.findAll` — tambahkan `school_id` filter (JOIN via students/submissions.school_id)
-- [ ] **T2.16** `SubmissionRepository.count` — tambahkan `school_id` filter
-- [ ] **T2.17** `UserService.list` — tambahkan `school_id` filter (JOIN via teachers/students untuk filter user per sekolah)
+- [x] **T2.1** `StudentRepository.findAll` — sudah support `school_id` filter ✅
+- [x] **T2.2** `StudentRepository.count` — sudah support `school_id` filter ✅
+- [x] **T2.3** `TeacherRepository.findAll` — sudah support `school_id` filter ✅
+- [x] **T2.4** `TeacherRepository.count` — sudah support `school_id` filter ✅
+- [x] **T2.5** `ClassRepository.findAll` — tambahkan `school_id` + `academic_year_id` filter ✅
+- [x] **T2.6** `ClassRepository.count` — tambahkan `school_id` + `academic_year_id` filter ✅
+- [x] **T2.7** `SubjectRepository.findAll` — tambahkan `school_id` filter ✅
+- [x] **T2.8` `SubjectRepository.count` — tambahkan `school_id` filter ✅
+- [x] **T2.9** `AssignmentRepository.findAll` — tambahkan `school_id` filter (JOIN via classes) ✅
+- [x] **T2.10** `AssignmentRepository.count` — tambahkan `school_id` filter ✅
+- [x] **T2.11** `GradeRepository.findAll` — tambahkan `school_id` filter (JOIN via students) ✅
+- [x] **T2.12** `GradeRepository.count` — tambahkan `school_id` filter ✅
+- [x] **T2.13** `AttendanceRepository.findAll` — tambahkan `school_id` filter (JOIN via students) ✅
+- [x] **T2.14** `AttendanceRepository.count` — tambahkan `school_id` filter ✅
+- [x] **T2.15** `SubmissionRepository.findAll` — tambahkan `school_id` filter (JOIN via students) ✅
+- [x] **T2.16** `SubmissionRepository.count` — tambahkan `school_id` filter ✅
+- [x] **T2.17** `UserService.list` — tambahkan `school_id` filter (JOIN via teachers) ✅
 
 ---
 

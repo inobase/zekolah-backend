@@ -13,6 +13,7 @@ export class AttendanceRepository {
     subject_id?: number
     date_from?: string
     date_to?: string
+    school_id?: number
     limit: number
     offset: number
   }): Promise<AttendanceWithDetails[]> {
@@ -30,6 +31,9 @@ export class AttendanceRepository {
       )
       .orderBy('attendance.date', 'desc')
 
+    if (filter.school_id !== undefined && filter.school_id !== null) {
+      query = query.where('students.school_id', filter.school_id)
+    }
     if (filter.student_id) query = query.where('attendance.student_id', filter.student_id)
     if (filter.subject_id) query = query.where('attendance.subject_id', filter.subject_id)
     if (filter.date_from) query = query.where('attendance.date', '>=', filter.date_from)
@@ -43,8 +47,13 @@ export class AttendanceRepository {
     subject_id?: number
     date_from?: string
     date_to?: string
+    school_id?: number
   }): Promise<number> {
     let query = this.knex('attendance')
+      .join('students', 'attendance.student_id', 'students.id')
+    if (filter.school_id !== undefined && filter.school_id !== null) {
+      query = query.where('students.school_id', filter.school_id)
+    }
     if (filter.student_id) query = query.where('attendance.student_id', filter.student_id)
     if (filter.subject_id) query = query.where('attendance.subject_id', filter.subject_id)
     if (filter.date_from) query = query.where('attendance.date', '>=', filter.date_from)

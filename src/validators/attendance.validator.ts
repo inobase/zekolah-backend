@@ -27,6 +27,7 @@ export const AttendanceFilterSchema = z.object({
   subject_id: z.coerce.number().int().positive().optional(),
   date_from: z.string().optional(),
   date_to: z.string().optional(),
+  school_id: z.coerce.number().int().positive().optional(),
 })
 
 // Response schemas

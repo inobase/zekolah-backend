@@ -12,6 +12,7 @@ export class GradeRepository {
     student_id?: number
     subject_id?: number
     assessment_type?: string
+    school_id?: number
     limit: number
     offset: number
   }): Promise<GradeWithDetails[]> {
@@ -27,6 +28,9 @@ export class GradeRepository {
         'students.nis'
       )
 
+    if (filter.school_id !== undefined && filter.school_id !== null) {
+      query = query.where('students.school_id', filter.school_id)
+    }
     if (filter.student_id) query = query.where('grades.student_id', filter.student_id)
     if (filter.subject_id) query = query.where('grades.subject_id', filter.subject_id)
     if (filter.assessment_type) query = query.where('grades.assessment_type', filter.assessment_type)
@@ -39,8 +43,13 @@ export class GradeRepository {
     student_id?: number
     subject_id?: number
     assessment_type?: string
+    school_id?: number
   }): Promise<number> {
     let query = this.knex('grades')
+      .join('students', 'grades.student_id', 'students.id')
+    if (filter.school_id !== undefined && filter.school_id !== null) {
+      query = query.where('students.school_id', filter.school_id)
+    }
     if (filter.student_id) query = query.where('grades.student_id', filter.student_id)
     if (filter.subject_id) query = query.where('grades.subject_id', filter.subject_id)
     if (filter.assessment_type) query = query.where('grades.assessment_type', filter.assessment_type)

@@ -27,6 +27,7 @@ export const SubmissionFilterSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   assignment_id: z.coerce.number().int().positive().optional(),
   student_id: z.coerce.number().int().positive().optional(),
+  school_id: z.coerce.number().int().positive().optional(),
 })
 
 // Response schemas

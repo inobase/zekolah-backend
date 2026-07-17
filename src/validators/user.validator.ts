@@ -27,6 +27,7 @@ export const UserFilterSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   status: z.enum(['active', 'inactive', 'suspended']).optional(),
   search: z.string().max(100).optional(),
+  school_id: z.coerce.number().int().positive().optional(),
 })
 
 // Response schemas

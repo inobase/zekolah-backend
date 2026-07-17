@@ -11,6 +11,7 @@ export class SubmissionRepository {
   async findAll(filter: {
     assignment_id?: number
     student_id?: number
+    school_id?: number
     limit: number
     offset: number
   }): Promise<SubmissionWithDetails[]> {
@@ -25,6 +26,9 @@ export class SubmissionRepository {
         'users.name as student_name'
       )
 
+    if (filter.school_id !== undefined && filter.school_id !== null) {
+      query = query.where('students.school_id', filter.school_id)
+    }
     if (filter.assignment_id) query = query.where('submissions.assignment_id', filter.assignment_id)
     if (filter.student_id) query = query.where('submissions.student_id', filter.student_id)
 
@@ -38,8 +42,13 @@ export class SubmissionRepository {
   async count(filter: {
     assignment_id?: number
     student_id?: number
+    school_id?: number
   }): Promise<number> {
     let query = this.knex('submissions')
+      .join('students', 'submissions.student_id', 'students.id')
+    if (filter.school_id !== undefined && filter.school_id !== null) {
+      query = query.where('students.school_id', filter.school_id)
+    }
     if (filter.assignment_id) query = query.where('submissions.assignment_id', filter.assignment_id)
     if (filter.student_id) query = query.where('submissions.student_id', filter.student_id)
     const result = await query.count({ count: '*' }).first() as { count: number }

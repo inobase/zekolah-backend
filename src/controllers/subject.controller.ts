@@ -15,9 +15,8 @@ export class SubjectController {
   }
 
   list = async (req: FastifyRequest, reply: FastifyReply) => {
-    const query = req.query as SubjectFilterInput
-    // Phase 1: enforce school isolation via activeSchoolId
-    const filter = { ...query, school_id: req.activeSchoolId } as SubjectFilterInput
+    const filter = { ...req.query, school_id: req.activeSchoolId } as SubjectFilterInput
+    // Phase 2: enforce school isolation via activeSchoolId
     return reply.send(await this.service.list(filter))
   }
 

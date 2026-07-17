@@ -12,6 +12,7 @@ export class AssignmentRepository {
     class_id?: number
     subject_id?: number
     teacher_id?: number
+    school_id?: number
     limit: number
     offset: number
   }): Promise<AssignmentWithDetails[]> {
@@ -28,6 +29,9 @@ export class AssignmentRepository {
         'users.name as teacher_name'
       )
 
+    if (filter.school_id !== undefined && filter.school_id !== null) {
+      query = query.where('classes.school_id', filter.school_id)
+    }
     if (filter.class_id) query = query.where('assignments.class_id', filter.class_id)
     if (filter.subject_id) query = query.where('assignments.subject_id', filter.subject_id)
     if (filter.teacher_id) query = query.where('assignments.teacher_id', filter.teacher_id)
@@ -40,9 +44,15 @@ export class AssignmentRepository {
     class_id?: number
     subject_id?: number
     teacher_id?: number
+    school_id?: number
   }): Promise<number> {
     let query = this.knex('assignments')
-    if (filter.class_id) query = query.where('assignments.class_id', filter.class_id)
+    if (filter.school_id !== undefined && filter.school_id !== null) {
+      query = query.join('classes', 'assignments.class_id', 'classes.id').where('classes.school_id', filter.school_id)
+      if (filter.class_id) query = query.where('assignments.class_id', filter.class_id)
+    } else {
+      if (filter.class_id) query = query.where('assignments.class_id', filter.class_id)
+    }
     if (filter.subject_id) query = query.where('assignments.subject_id', filter.subject_id)
     if (filter.teacher_id) query = query.where('assignments.teacher_id', filter.teacher_id)
     const result = await query.count({ count: '*' }).first() as { count: number }
