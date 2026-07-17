@@ -19,7 +19,9 @@ export class AcademicYearController {
   }
 
   list = async (req: FastifyRequest, reply: FastifyReply) => {
-    const filter = req.query as AcademicYearFilterInput
+    const query = req.query as AcademicYearFilterInput
+    // Phase 1: enforce school isolation via activeSchoolId
+    const filter = { ...query, school_id: req.activeSchoolId ?? query.school_id }
     return reply.send(await this.service.list(filter))
   }
 
@@ -30,7 +32,9 @@ export class AcademicYearController {
 
   create = async (req: FastifyRequest, reply: FastifyReply) => {
     const body = req.body as CreateAcademicYearInput
-    return reply.status(201).send(await this.service.create(body))
+    // Phase 1: auto-fill school_id from active context if not provided
+    const payload = { ...body, school_id: body.school_id ?? req.activeSchoolId } as CreateAcademicYearInput
+    return reply.status(201).send(await this.service.create(payload))
   }
 
   update = async (req: FastifyRequest, reply: FastifyReply) => {

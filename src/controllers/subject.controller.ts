@@ -15,7 +15,9 @@ export class SubjectController {
   }
 
   list = async (req: FastifyRequest, reply: FastifyReply) => {
-    const filter = req.query as SubjectFilterInput
+    const query = req.query as SubjectFilterInput
+    // Phase 1: enforce school isolation via activeSchoolId
+    const filter = { ...query, school_id: req.activeSchoolId } as SubjectFilterInput
     return reply.send(await this.service.list(filter))
   }
 
@@ -26,7 +28,9 @@ export class SubjectController {
 
   create = async (req: FastifyRequest, reply: FastifyReply) => {
     const body = req.body as CreateSubjectInput
-    return reply.status(201).send(await this.service.create(body))
+    // Phase 1: auto-fill school_id from active context if not provided
+    const payload = { ...body, school_id: body.school_id ?? req.activeSchoolId } as CreateSubjectInput
+    return reply.status(201).send(await this.service.create(payload))
   }
 
   update = async (req: FastifyRequest, reply: FastifyReply) => {

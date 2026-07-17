@@ -15,7 +15,9 @@ export class UserController {
   }
 
   list = async (req: FastifyRequest, reply: FastifyReply) => {
-    const filter = req.query as UserFilterInput
+    const query = req.query as UserFilterInput
+    // Phase 1: pass activeSchoolId into filter (Phase 2 will add repo support for school_id)
+    const filter = { ...query, school_id: req.activeSchoolId } as UserFilterInput
     const result = await this.service.list(filter)
     return reply.send(result)
   }

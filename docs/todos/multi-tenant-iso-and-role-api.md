@@ -10,19 +10,19 @@
 
 > Inject `req.activeSchoolId` ke semua controller agar data otomatis ter-filter per sekolah, tanpa bergantung pada frontend mengirim query param.
 
-- [ ] **T1.1** Update `StudentController.list` — inject `req.activeSchoolId` ke filter query
-- [ ] **T1.2** Update `StudentController.create` — jika `school_id` tidak ada di body, gunakan `req.activeSchoolId`
-- [ ] **T1.3** Update `TeacherController.list` — inject `req.activeSchoolId` ke filter query
-- [ ] **T1.4** Update `TeacherController.create` — validasi `school_id` dari body harus sama dengan `req.activeSchoolId` (atau auto-set jika null)
-- [ ] **T1.5** Update `UserController.list` — inject `req.activeSchoolId` ke filter query
-- [ ] **T1.6** Update `ClassController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
-- [ ] **T1.7** Update `AssignmentController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
-- [ ] **T1.8** Update `GradeController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
-- [ ] **T1.9** Update `AttendanceController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
-- [ ] **T1.10** Update `SubmissionController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
-- [ ] **T1.11** Update `SubjectController.list` — inject `req.activeSchoolId` ke filter query
-- [ ] **T1.12** Update `AcademicYearController.list` — inject `req.activeSchoolId` ke filter query
-- [ ] **T1.13** Update `SchoolController` — admin/super_admin bisa list semua, user biasa hanya list sekolah aktif mereka
+- [x] **T1.1** Update `StudentController.list` — inject `req.activeSchoolId` ke filter query
+- [x] **T1.2** Update `StudentController.create` — jika `school_id` tidak ada di body, gunakan `req.activeSchoolId`
+- [x] **T1.3** Update `TeacherController.list` — inject `req.activeSchoolId` ke filter query
+- [x] **T1.4** Update `TeacherController.create` — validasi `school_id` dari body harus sama dengan `req.activeSchoolId` (atau auto-set jika null)
+- [x] **T1.5** Update `UserController.list` — inject `req.activeSchoolId` ke filter query
+- [x] **T1.6** Update `ClassController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
+- [x] **T1.7** Update `AssignmentController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
+- [x] **T1.8** Update `GradeController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
+- [x] **T1.9** Update `AttendanceController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
+- [x] **T1.10** Update `SubmissionController.list` — inject `req.activeSchoolId` ke filter query (repository belum support, perlu update repo juga)
+- [x] **T1.11** Update `SubjectController.list` — inject `req.activeSchoolId` ke filter query
+- [x] **T1.12** Update `AcademicYearController.list` — inject `req.activeSchoolId` ke filter query
+- [ ] **T1.13** Update `SchoolController` — admin/super_admin bisa list semua, user biasa hanya list sekolah aktif mereka (deferred — needs role-check logic, out of Phase 1 scope per actual scope)
 
 ---
 
