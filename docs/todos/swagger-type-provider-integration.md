@@ -186,6 +186,25 @@
 | **Total** | | **~70 files** | **~20 hrs** |
 
 ## 🔜 Remaining Tasks (Low Priority)
-- [ ] Consider `@fastify/cors` refinements (currently wildcard `*` — narrow for production)
-- [ ] Add OpenAPI response examples in `components.examples`
-- [ ] Add request/response `content-Type` header validation
+
+### 1. CORS Production Readiness
+- [x] Already using `CORS_ORIGIN` env var with `NODE_ENV` logic — defaults to `http://localhost:3001` in dev, configurable for production (no wildcard `*`)
+- [ ] Add explicit check: if `NODE_ENV !== 'production'` and `CORS_ORIGIN` not set → fallback to `*` for local dev convenience
+
+### 2. Add OpenAPI response examples in `components.examples`
+- [ ] Define reusable response examples for common patterns:
+  - `200 OK` success response (single item + paginated)
+  - `400 Bad Request` error response
+  - `401 Unauthorized` token expired/expired response
+  - `403 Forbidden` insufficient role
+  - `409 Conflict` duplicate email/school
+  - `422 Validation Error` with Zod error details
+  - `429 Too Many Requests` (rate-limit)
+- [ ] Wire examples into key endpoints: auth (register/login responses), schools (create/list)
+- [ ] Add request body examples: login payload, register payload, school create payload
+
+### 3. Add request/response `Content-Type` header validation
+- [ ] Add `application/json` Content-Type requirement for POST/PUT/PATCH endpoints
+- [ ] Validate response `Content-Type` header in Swagger docs
+- [ ] Return `415 Unsupported Media Type` if wrong Content-Type on request
+- [ ] Add `Accept` header documentation for GET endpoints
