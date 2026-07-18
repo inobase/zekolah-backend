@@ -47,6 +47,7 @@ export async function up(knex: Knex): Promise<void> {
     table.increments('id').primary();
     table
       .integer('program_id')
+      .unsigned()
       .notNullable()
       .references('id')
       .inTable('programs')
