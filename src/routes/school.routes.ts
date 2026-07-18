@@ -14,6 +14,7 @@ import {
   PaginatedSchoolsResponseSchema,
   SchoolDeleteResponseSchema,
   SchoolIdParamSchema,
+  EducationLevelSchema,
 } from '../validators/school.validator'
 
 import { ContextHeadersSchema } from '../validators/common.validator';
@@ -33,7 +34,7 @@ export const schoolRoutes = async (app: FastifyZodInstance): Promise<void> => {
         tags: ['schools'],
         summary: 'List all schools',
         description:
-          'Returns a paginated list of schools. Supports `search`, `page`, `limit` query params.',
+          'Returns a paginated list of schools. Supports `search`, `page`, `limit`, `education_level` query params.',
         security: [{ bearerAuth: [] }],
         headers: ContextHeadersSchema,
         querystring: SchoolFilterSchema,

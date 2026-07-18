@@ -4,6 +4,11 @@
 
 import { z } from 'zod'
 
+/** Kemendikbud education level codes */
+export const EDUCATION_LEVEL_ENUM = ['1A', '1B', '2A', '2B', '3A', '3B', '4A', '5A', '5B'] as const
+
+export const EducationLevelSchema = z.enum(EDUCATION_LEVEL_ENUM).default('3B')
+
 export const CreateSchoolSchema = z.object({
   name: z.string().min(2).max(200),
   code: z.string().min(2).max(50),
@@ -13,6 +18,7 @@ export const CreateSchoolSchema = z.object({
   city: z.string().max(100).optional().nullable(),
   province: z.string().max(100).optional().nullable(),
   logo_url: z.string().max(500).optional().nullable(),
+  education_level: EducationLevelSchema,
 })
 
 export const UpdateSchoolSchema = CreateSchoolSchema.partial()
@@ -21,6 +27,7 @@ export const SchoolFilterSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().max(100).optional(),
   status: z.enum(['active', 'inactive']).optional(),
+  education_level: EducationLevelSchema.optional(),
 })
 
 // Response schemas
@@ -33,6 +40,7 @@ export const SchoolResponseSchema = z.object({
   address: z.string().nullable(),
   city: z.string().nullable(),
   province: z.string().nullable(),
+  education_level: EducationLevelSchema,
   logo_url: z.string().nullable(),
   status: z.string(),
   created_at: z.any(),
@@ -59,3 +67,4 @@ export const SchoolIdParamSchema = z.object({
 export type CreateSchoolInput = z.infer<typeof CreateSchoolSchema>
 export type UpdateSchoolInput = z.infer<typeof UpdateSchoolSchema>
 export type SchoolFilterInput = z.infer<typeof SchoolFilterSchema>
+export type EducationLevel = z.infer<typeof EducationLevelSchema>

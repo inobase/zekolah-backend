@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 require('dotenv').config();
-const Knex = require('knex');
+const knex = require('knex').default;
 const knexConfig = require('../knexfile');
 
 const command = process.argv[2];
@@ -8,42 +8,42 @@ const command = process.argv[2];
 async function runMigrationsLatest() {
   const env = process.env.NODE_ENV || 'development';
   const config = knexConfig()[env] || knexConfig();
-  const knex = Knex(config);
+  const db = knex(config);
 
   try {
     console.log('Running database migrations...');
-    const result = await knex.migrate.latest();
+    const result = await db.migrate.latest();
     console.log(`✅ Migrations completed. Applied ${result.length} migration(s)`);
   } catch (err) {
     console.error('❌ Migration failed:', err.message);
   } finally {
-    await knex.destroy();
+    await db.destroy();
   }
 }
 
 async function rollBackMigrations() {
   const env = process.env.NODE_ENV || 'development';
   const config = knexConfig()[env] || knexConfig();
-  const knex = Knex(config);
+  const db = knex(config);
 
   try {
     console.log('Rolling back last migration...');
-    await knex.migrate.rollback();
+    await db.migrate.rollback();
     console.log('✅ Rollback completed');
   } catch (err) {
     console.error('❌ Rollback failed:', err.message);
   } finally {
-    await knex.destroy();
+    await db.destroy();
   }
 }
 
 async function runSeed() {
   const env = process.env.NODE_ENV || 'development';
   const config = knexConfig()[env] || knexConfig();
-  const knex = Knex(config);
+  const db = knex(config);
 
   try {
-    await knex.seed.run();
+    await db.seed.run();
 
     console.log('✅ Seeds completed');
     console.log('   - admin@zekolah.id');
@@ -53,7 +53,7 @@ async function runSeed() {
   } catch (err) {
     console.error('❌ Seed failed:', err.message);
   } finally {
-    await knex.destroy();
+    await db.destroy();
   }
 }
 

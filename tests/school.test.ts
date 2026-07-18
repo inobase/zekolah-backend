@@ -285,5 +285,69 @@ describe('School API', () => {
     });
     expect(res.statusCode).toBe(404);
   });
+
+  // ---- education_level (Phase 1) ----
+
+  it('POST /api/v1/schools creates school with default education_level 3B (SMK)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/schools',
+      headers: getAuthHeaders(),
+      payload: { name: 'SMK Default', code: 'SMKD' },
+    });
+    expect(res.statusCode).toBe(201);
+    const body = JSON.parse(res.payload);
+    expect(body.education_level).toBe('3B');
+  });
+
+  it('POST /api/v1/schools creates school with education_level 3A (SMA)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/schools',
+      headers: getAuthHeaders(),
+      payload: { name: 'SMA Test', code: 'SMAT', education_level: '3A' },
+    });
+    expect(res.statusCode).toBe(201);
+    const body = JSON.parse(res.payload);
+    expect(body.education_level).toBe('3A');
+  });
+
+  it('POST /api/v1/schools rejects invalid education_level', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/schools',
+      headers: getAuthHeaders(),
+      payload: { name: 'Invalid', code: 'INV', education_level: '9Z' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('GET /api/v1/schools filters by education_level', async () => {
+    // Create schools with different education levels
+    await app.inject({
+      method: 'POST',
+      url: '/api/v1/schools',
+      headers: getAuthHeaders(),
+      payload: { name: 'SMK Alpha', code: 'SMKA' },
+    });
+    await app.inject({
+      method: 'POST',
+      url: '/api/v1/schools',
+      headers: getAuthHeaders(),
+      payload: { name: 'SMA Beta', code: 'SMAB', education_level: '3A' },
+    });
+
+    // Filter by SMK only
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/v1/schools?education_level=3B',
+      headers: getAuthHeaders(),
+    });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.payload);
+    for (const school of body.data) {
+      expect(school.education_level).toBe('3B');
+    }
+  });
 });
 

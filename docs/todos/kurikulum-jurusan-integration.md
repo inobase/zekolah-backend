@@ -3,7 +3,7 @@
 > **Sumber:** [docs/discussions/kurikulum-jurusan-smk-integration.md](../discussions/kurikulum-jurusan-smk-integration.md)
 > **Sumber:** [docs/observations/kurikulum-jurusan-readiness.md](../observations/kurikulum-jurusan-readiness.md)
 > **Created:** 2026-07-18
-> **Status:** Phase 1 Not Started
+> **Status:** ✅ Phase 1 Complete — Phase 2 Not Started
 
 ---
 
@@ -13,51 +13,56 @@
 
 ### Migration
 
-- [ ] **T1.1** Buat migration `018_add_education_level_to_schools.ts`
-  - [ ] Tambah kolom `education_level` ENUM(`1A`,`1B`,`2A`,`2B`,`3A`,`3B`,`4A`,`5A`,`5B`) DEFAULT `'3B'` (SMK default)
-  - [ ] Add index pada `education_level`
-  - [ ] Seed migration: update existing schools ke `'3B'` (SMK) atau `'3A'` (SMA) berdasarkan data
-  - [ ] Down: DROP COLUMN `education_level`
+- [x] **T1.1** Buat migration `018_add_education_level_to_schools.ts`
+  - [x] Tambah kolom `education_level` ENUM(`1A`,`1B`,`2A`,`2B`,`3A`,`3B`,`4A`,`5A`,`5B`) DEFAULT `'3B'` (SMK default)
+  - [x] Add index pada `education_level`
+  - [x] Seed migration: update existing schools ke `'3B'` (SMK) atau `'3A'` (SMA) berdasarkan data
+  - [x] Down: DROP COLUMN `education_level`
 
 ### Models & Interfaces
 
-- [ ] **T1.2** Update `src/models/interfaces/SchoolInterfaces.ts`
-  - [ ] Tambah field `education_level` ke `School` interface
-  - [ ] Export `EducationLevel` type: `'1A' | '1B' | '2A' | '2B' | '3A' | '3B' | '4A' | '5A' | '5B'`
-  - [ ] Export helper: `isSmk(educationLevel)` — return `true` jika `education_level IN ('3B','5A','5B')`
+- [x] **T1.2** Update `src/models/interfaces/SchoolInterfaces.ts`
+  - [x] Tambah field `education_level` ke `School` interface
+  - [x] Export `EducationLevel` type: `'1A' | '1B' | '2A' | '2B' | '3A' | '3B' | '4A' | '5A' | '5B'`
+  - [x] Export `EDUCATION_LEVELS` map (kode → label)
+  - [x] Export helper: `isJurusanEligible(educationLevel)` — alias `isSmk`, return `true` jika `education_level IN ('3B','5A','5B')`
+  - [x] Tambah `education_level` ke `CreateSchoolInput` dan `UpdateSchoolInput`
 
 ### Repositories
 
-- [ ] **T1.3** Update `src/repositories/school.repository.ts`
-  - [ ] Tambah filter optional `education_level` di `findAll`
+- [x] **T1.3** Update `src/repositories/school.repository.ts`
+  - [x] Tambah filter optional `education_level` di `findAll` dan `search`
 
 ### Services & Controllers
 
-- [ ] **T1.4** Update `src/services/school.service.ts` — accept `education_level` filter
-- [ ] **T1.5** Update `src/controllers/school.controller.ts` — passthrough `education_level` filter dari query param
+- [x] **T1.4** Update `src/services/school.service.ts` — accept `education_level` filter
+- [x] **T1.5** Update `src/controllers/school.controller.ts` — passthrough `education_level` filter dari query param (via `SchoolFilterInput`)
 
 ### Validators
 
-- [ ] **T1.6** Update `src/validators/school.validator.ts`
-  - [ ] Tambah `EducationLevelSchema` constant
-  - [ ] Tambah `education_level` di SchoolFilterSchema (query param)
-  - [ ] Tambah `education_level` di CreateSchoolSchema (body)
+- [x] **T1.6** Update `src/validators/school.validator.ts`
+  - [x] Tambah `EDUCATION_LEVEL_ENUM` constant
+  - [x] Tambah `EducationLevelSchema` z.enum()
+  - [x] Tambah `education_level` di `SchoolFilterSchema` (query param)
+  - [x] Tambah `education_level` di `CreateSchoolSchema` (body)
+  - [x] `UpdateSchoolSchema` inherits via `.partial()`
 
 ### Routes
 
-- [ ] **T1.7** Update `src/routes/school.routes.ts`
-  - [ ] Tambah query param schema `education_level` di GET `/`
-  - [ ] Tambah body schema field `education_level` di POST `/`
-  - [ ] Add Swagger `tags: ['schools']`, summary updated
+- [x] **T1.7** Update `src/routes/school.routes.ts`
+  - [x] Tambah query param schema `education_level` di GET `/`
+  - [x] Tambah body schema field `education_level` di POST `/`
+  - [x] Swagger docs updated dengan tags: `['schools']`
 
 ### Tests
 
-- [ ] **T1.8** Update `tests/school.test.ts`
-  - [ ] Test: create school with `education_level: '3B'` → SUCCESS
-  - [ ] Test: create school with `education_level: '3A'` → SUCCESS
-  - [ ] Test: create school with invalid `education_level` → 400
-  - [ ] Test: filter schools by `education_level=3B` → only SMK returned
-  - [ ] Test: default `education_level` when not provided → `'3B'`
+- [x] **T1.8** Update `tests/school.test.ts`
+  - [x] Test: create school with `education_level: '3B'` → SUCCESS
+  - [x] Test: create school with `education_level: '3A'` → SUCCESS
+  - [x] Test: create school with invalid `education_level` → 400
+  - [x] Test: filter schools by `education_level=3B` → only SMK returned
+  - [x] Test: default `education_level` when not provided → `'3B'`
+  - [x] **All 18 tests passing ✅**
 
 ---
 
@@ -486,7 +491,7 @@
 
 | Phase | Status | Est. Days |
 |-------|--------|-----------|
-| P1: `education_level` di `schools` | ⬜ Not Started | 1-2 |
+| P1: `education_level` di `schools` | ✅ Complete (8/8 tasks) | 1-2 |
 | P2: Program Hierarchy | ⬜ Not Started | 2-3 |
 | P3: Curriculum Templates | ⬜ Not Started | 2-3 |
 | P4: School Adoption & School Subjects | ⬜ Not Started | 2-3 |

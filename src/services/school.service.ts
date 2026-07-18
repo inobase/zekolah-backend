@@ -26,15 +26,15 @@ export class SchoolService {
     data: School[]
     pagination: { page: number; limit: number; total: number }
   }> {
-    const { page, limit, search, status } = filter
+    const { page, limit, search, status, education_level } = filter
     const offset = (page - 1) * limit
     // Apply school_id restriction only when an explicit list is provided.
     // undefined = no restriction (admin / super_admin); [] = no schools accessible.
     const ids =
       allowedSchoolIds === undefined ? undefined : allowedSchoolIds ?? []
     const [data, total] = await Promise.all([
-      this.repo.findAll({ search, status, limit, offset, ids }),
-      this.repo.count({ search, status, ids }),
+      this.repo.findAll({ search, status, education_level, limit, offset, ids }),
+      this.repo.count({ search, status, education_level, ids }),
     ])
     return { data, pagination: { page, limit, total } }
   }

@@ -3,7 +3,7 @@
 // =====================================================
 
 import { Knex } from 'knex'
-import { School, CreateSchoolInput, UpdateSchoolInput } from '../models/interfaces/SchoolInterfaces'
+import { School, CreateSchoolInput, UpdateSchoolInput, EducationLevel } from '../models/interfaces/SchoolInterfaces'
 
 export class SchoolRepository {
   constructor(private knex: Knex) {}
@@ -11,6 +11,7 @@ export class SchoolRepository {
   async findAll(filter: {
     search?: string
     status?: string
+    education_level?: EducationLevel
     limit: number
     offset: number
     ids?: number[]
@@ -27,11 +28,17 @@ export class SchoolRepository {
       })
     }
     if (filter.status) q.where({ status: filter.status })
+    if (filter.education_level) q.where({ education_level: filter.education_level })
     q.orderBy('id', 'desc').limit(filter.limit).offset(filter.offset)
     return q
   }
 
-  async count(filter: { search?: string; status?: string; ids?: number[] }): Promise<number> {
+  async count(filter: {
+    search?: string
+    status?: string
+    education_level?: EducationLevel
+    ids?: number[]
+  }): Promise<number> {
     const q = this.knex('schools').count<{ count: string }[]>('* as count').first()
     if (filter.ids) {
       q.whereIn('id', filter.ids)
@@ -44,6 +51,7 @@ export class SchoolRepository {
       })
     }
     if (filter.status) q.where({ status: filter.status })
+    if (filter.education_level) q.where({ education_level: filter.education_level })
     const result = await q
     return Number((result as any)?.count ?? 0)
   }
@@ -63,6 +71,7 @@ export class SchoolRepository {
     const [id] = await this.knex('schools').insert({
       ...data,
       status: 'active',
+      education_level: data.education_level ?? '3B',
       created_at: now,
       updated_at: now,
     })
