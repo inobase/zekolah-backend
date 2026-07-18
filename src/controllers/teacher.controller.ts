@@ -60,7 +60,7 @@ export class TeacherController {
       const teacher = await this.repo.findById(id)
       if (!teacher) throw new AppError('NOT_FOUND', 'Teacher not found')
       if (teacher.school_id !== req.activeSchoolId) {
-        throw new AppError('FORBIDDEN', 'You do not have permission to update this teacher')
+        throw new AppError('NOT_FOUND', 'Teacher not found')
       }
     }
 
@@ -75,7 +75,7 @@ export class TeacherController {
       const teacher = await this.repo.findById(id)
       if (!teacher) throw new AppError('NOT_FOUND', 'Teacher not found')
       if (teacher.school_id !== req.activeSchoolId) {
-        throw new AppError('FORBIDDEN', 'You do not have permission to delete this teacher')
+        throw new AppError('NOT_FOUND', 'Teacher not found')
       }
     }
 

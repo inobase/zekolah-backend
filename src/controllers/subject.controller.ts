@@ -54,7 +54,7 @@ export class SubjectController {
       const entity = await this.repo.findById(id)
       if (!entity) throw new AppError('NOT_FOUND', 'Subject not found')
       if (entity.school_id !== req.activeSchoolId) {
-        throw new AppError('FORBIDDEN', 'You do not have permission to update this subject')
+        throw new AppError('NOT_FOUND', 'Subject not found')
       }
     }
 
@@ -68,7 +68,7 @@ export class SubjectController {
       const entity = await this.repo.findById(id)
       if (!entity) throw new AppError('NOT_FOUND', 'Subject not found')
       if (entity.school_id !== req.activeSchoolId) {
-        throw new AppError('FORBIDDEN', 'You do not have permission to delete this subject')
+        throw new AppError('NOT_FOUND', 'Subject not found')
       }
     }
 

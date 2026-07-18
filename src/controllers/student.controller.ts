@@ -60,7 +60,7 @@ export class StudentController {
       const student = await this.repo.findById(id)
       if (!student) throw new AppError('NOT_FOUND', 'Student not found')
       if (student.school_id !== req.activeSchoolId) {
-        throw new AppError('FORBIDDEN', 'You do not have permission to update this student')
+        throw new AppError('NOT_FOUND', 'Student not found')
       }
     }
 
@@ -75,7 +75,7 @@ export class StudentController {
       const student = await this.repo.findById(id)
       if (!student) throw new AppError('NOT_FOUND', 'Student not found')
       if (student.school_id !== req.activeSchoolId) {
-        throw new AppError('FORBIDDEN', 'You do not have permission to delete this student')
+        throw new AppError('NOT_FOUND', 'Student not found')
       }
     }
 

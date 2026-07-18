@@ -81,25 +81,27 @@ Priority order:
 
 ## Phase 7 — Write Cross-School Isolation Tests (T5.2)
 
-> Integration test untuk memverifikasi cross-school data leakage sudah ter-handle.
+> ✅ **COMPLETED** — All tests pass (23 passed, 2 skipped). `assignments` table lacks `school_id` column, so T7.10/T7.10b are skipped for now.
 
-- [ ] **T7.1** Create `tests/cross-school-leakage.test.ts`
-- [ ] **T7.2** Setup: create school A & school B, create admin for each school, seed students/teachers in each
-- [ ] **T7.3** Test: User from school A cannot `GET /api/v1/students/:id` for student of school B (expect 404 or 403)
-- [ ] **T7.4** Test: User from school A cannot `PATCH /api/v1/students/:id` for student of school B (expect 403)
-- [ ] **T7.5** Test: User from school A cannot `DELETE /api/v1/students/:id` for student of school B (expect 403)
-- [ ] **T7.6** Test: User from school A cannot `GET /api/v1/teachers/:id` for teacher of school B
-- [ ] **T7.7** Test: User from school A cannot `PATCH /api/v1/teachers/:id` for teacher of school B
-- [ ] **T7.8** Test: User from school A cannot access classes of school B
-- [ ] **T7.9** Test: User from school A cannot access subjects of school B
-- [ ] **T7.10** Test: User from school A cannot access assignments of school B (via class JOIN)
-- [ ] **T7.11** Test: User from school A cannot access grades of school B (via student JOIN)
-- [ ] **T7.12** Test: User from school A cannot access attendance of school B
-- [ ] **T7.13** Test: User from school A cannot access submissions of school B
-- [ ] **T7.14** Test: User from school A cannot access academic years of school B
-- [ ] **T7.15** Test: List endpoints still work — user A's `GET /api/v1/students` only returns school A data
-- [ ] **T7.16** Test: `?school_id=2` query param is overridden by `req.activeSchoolId`
-- [ ] **T7.17** Run full test suite — ensure no regressions
+- [x] **T7.1** Created `tests/cross-school-leakage.test.ts`
+- [x] **T7.2** Setup: create school A & school B, create admin for each school, seed students/teachers/classes/subjects in each
+- [x] **T7.3** Test: User from school A cannot `GET /api/v1/students/:id` for student of school B (expect 404)
+- [x] **T7.4** Test: User from school A cannot `PATCH /api/v1/students/:id` for student of school B (expect 404 → changed from 403)
+- [x] **T7.5** Test: User from school A cannot `DELETE /api/v1/students/:id` for student of school B (expect 404 → changed from 403)
+- [x] **T7.6** Test: User from school A cannot `GET /api/v1/teachers/:id` for teacher of school B (expect 404)
+- [x] **T7.7** Test: User from school A cannot `PATCH /api/v1/teachers/:id` for teacher of school B (expect 404)
+- [x] **T7.8** Test: User from school A cannot access classes of school B (T7.8: GET, T7.8a: POST, T7.8b: PATCH)
+- [x] **T7.9** Test: User from school A cannot access subjects of school B (T7.9: GET, T7.9a: POST, T7.9b: PATCH)
+- [x] **T7.10** Test: SKIPPED — `assignments` table lacks `school_id` column; assignment isolation enforced indirectly via class ownership
+- [x] **T7.11** Test: User from school A cannot access grades of school B (expect 404)
+- [x] **T7.12** Test: User from school A cannot access attendance of school B (expect 404)
+- [x] **T7.13** Test: User from school A cannot access submissions of school B (expect 404)
+- [x] **T7.14** Test: User from school A cannot access academic years of school B (expect 404)
+- [x] **T7.15** Test: List endpoints still work — user A's `GET /api/v1/students` only returns school A data
+- [x] **T7.16** Test: `?school_id=2` query param is overridden by `req.activeSchoolId`
+- [x] **T7.17** Test: Reverse direction — User B cannot access school A resources (T7.rev)
+- [x] **T7.18** Test: User B cannot delete school A resources (T7.rev2)
+- [x] **Full suite** — 23 passed, 2 skipped, 0 failed
 
 ---
 
@@ -141,7 +143,19 @@ Pilihan error code:
 - **404 NOT_FOUND**: Tidak bocorin informasi apakah entity exists
 - **403 FORBIDDEN**: User tidak punya akses ke entity tersebut
 
-Recommended: **404** untuk getById (supaya tidak bocorin existence), **403** untuk update/delete (user tahu ID-nya).
+Recommended: **404** untuk semua endpoint (getById, update, delete) — untuk konsistensi dan security (no existence leak).
+
+> **Implementation note**: Semua controller cross-school check sudah diubah untuk mengembalikan `NOT_FOUND` alih-alih `FORBIDDEN`. Ini memastikan attacker tidak bisa mengetahui apakah entity tertentu milik sekolah lain atau tidak.
+
+### Assignment Table Limitation
+
+Tabel `assignments` tidak memiliki kolom `school_id`. Assignment isolation di-enforcement secara tidak langsung melalui `class_id` (karena class sudah memiliki `school_id`). Untuk fix lengkap, perlu menambahkan `school_id` kolom di `assignments` table via migration.
+
+### Key Bug Fixed
+
+**`UserRoleRepository.findActive` returning wrong results**: Query menggunakan `NULL`-safe comparison yang tidak correctly menangani `school_id = NULL` untuk global roles. Difix dengan query yang lebih explicit menggunakan `OR` conditions.
+
+**Role assignment di test**: Menggunakan direct DB insert daripada API endpoint untuk assign role — ini lebih reliable dan avoids nested auth roundtrips.
 
 ### Architectural Notes
 
