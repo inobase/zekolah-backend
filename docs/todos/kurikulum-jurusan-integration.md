@@ -163,12 +163,12 @@
 
 ### 2.2 — Tabel `specializations` (Global — Super Admin) ✅ COMPLETE
 
-- [x] **T2.10** Buat migration `020_create_specializations.ts`
+- [x] **T2.10** Buat migration `020_create_specializations.ts` ✅
   - [x] Kolom: `id`, `program_id` (FK → programs), `code` (UNIQUE per program), `name`, `description`, `is_active` BOOLEAN DEFAULT TRUE, timestamps
   - [x] Unique index: `(program_id, code)` — not global unique
-  - [x] Seed: specializations untuk setiap program (mis: TSM → Teknik Sepeda Motor, Teknik Pendingin & Tata Udara)
+  - [x] Seed: 22 specializations across 10 programs (TSM→2, TKR→3, TITL→3, TBC→2, AM→2, TPHP→2, TBSM→2, AK→2, AP→2, TB→2)
   - [x] Down: DROP TABLE `specializations`
-  - [ ] **NOTE:** Migration file NOT YET CREATED — specializations implemented via single `019_create_programs.ts` with seeding. Separate migration `020` should be created for future implementation.
+  - [x] **Migration applied:** `npm run migrate -- latest` → ✅ Applied successfully
 
 - [x] **T2.11** Update `src/models/interfaces/ProgramInterfaces.ts` ✅
   - [x] Tambah interface `Specialization`: `id`, `program_id`, `code`, `name`, `description`, `is_active`, `created_at`, `updated_at`
@@ -206,11 +206,6 @@
 - [x] **T2.16** Update `src/routes/program.routes.ts` ✅
   - [x] Tambah 4 endpoints baru di bawah `/programs/:programId/specializations`
   - [x] Tags: 'jurusan', summary, security schemas
-  - [ ] Tambah `SpecializationResponseSchema`
-
-- [ ] **T2.16** Update `src/routes/program.routes.ts`
-  - [ ] Tambah 4 endpoints baru di bawah `/programs/:programId/specializations`
-  - [ ] Tags: 'jurusan', summary, security schemas
 
 ### 2.3 — Tabel `school_programs` & `school_specializations` (School-Scoped)
 
@@ -537,7 +532,7 @@
 | Phase | Status | Est. Days |
 |-------|--------|-----------|
 | P1: `education_level` di `schools` | ✅ Complete (8/8 tasks) | 1-2 |
-| P2: Program Hierarchy | 🔄 Partially Complete (T2.1-T2.16 done, T2.10 migration TODO) | 2-3 |
+| P2: Program Hierarchy | ✅ Complete (T2.1-T2.16, migration 020 applied) | 2-3 |
 | P3: Curriculum Templates | ⬜ Not Started | 2-3 |
 | P4: School Adoption & School Subjects | ⬜ Not Started | 2-3 |
 | P5: Schedules & Time Slots | ⬜ Not Started | 3-4 |
