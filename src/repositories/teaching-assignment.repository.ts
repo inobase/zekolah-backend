@@ -65,11 +65,37 @@ export class TeachingAssignmentRepository {
         'teachers.specialization',
         'classes.name as class_name',
         'classes.grade',
+        'classes.school_id as class_school_id',
         'subjects.name as subject_name',
         'subjects.code as subject_code',
         'academic_years.year as academic_year_label'
       )
       .where('teaching_assignments.id', id)
+      .first()
+
+    return row || null
+  }
+
+  async findByIdScoped(id: number, schoolId: number): Promise<TeachingAssignmentWithDetails | null> {
+    const row = await this.knex('teaching_assignments')
+      .join('teachers', 'teaching_assignments.teacher_id', 'teachers.id')
+      .join('users', 'teachers.user_id', 'users.id')
+      .join('classes', 'teaching_assignments.class_id', 'classes.id')
+      .join('subjects', 'teaching_assignments.subject_id', 'subjects.id')
+      .join('academic_years', 'teaching_assignments.academic_year_id', 'academic_years.id')
+      .select(
+        'teaching_assignments.*',
+        'users.name as teacher_name',
+        'teachers.specialization',
+        'classes.name as class_name',
+        'classes.grade',
+        'classes.school_id as class_school_id',
+        'subjects.name as subject_name',
+        'subjects.code as subject_code',
+        'academic_years.year as academic_year_label'
+      )
+      .where('teaching_assignments.id', id)
+      .andWhere('classes.school_id', schoolId)
       .first()
 
     return row || null

@@ -60,9 +60,13 @@ export class StudentService {
   }
 
   async update(id: number, data: UpdateStudentInput): Promise<Student> {
+    // Verify entity exists (school check done in controller)
+    const existing = await this.repo.findById(id)
+    if (!existing) throw new AppError('NOT_FOUND', 'Student not found')
+    
     if (data.nis) {
-      const existing = await this.repo.findByNis(data.nis)
-      if (existing && existing.id !== id) {
+      const existingNis = await this.repo.findByNis(data.nis)
+      if (existingNis && existingNis.id !== id) {
         throw new AppError('ALREADY_EXISTS', 'Student NIS already exists')
       }
     }

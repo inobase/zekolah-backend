@@ -76,6 +76,25 @@ export class AssignmentRepository {
     return { ...row, max_score: Number(row.max_score) } as unknown as AssignmentWithDetails
   }
 
+  async findByIdScoped(id: number, schoolId: number): Promise<AssignmentWithDetails | null> {
+    const [row] = await this.knex('assignments')
+      .join('subjects', 'assignments.subject_id', 'subjects.id')
+      .join('classes', 'assignments.class_id', 'classes.id')
+      .join('teachers', 'assignments.teacher_id', 'teachers.id')
+      .join('users', 'teachers.user_id', 'users.id')
+      .where('assignments.id', id)
+      .andWhere('classes.school_id', schoolId)
+      .select(
+        'assignments.*',
+        'subjects.name as subject_name',
+        'classes.name as class_name',
+        'classes.school_id as class_school_id',
+        'users.name as teacher_name'
+      )
+    if (!row) return null
+    return { ...row, max_score: Number(row.max_score) } as unknown as AssignmentWithDetails
+  }
+
   async hasDependents(id: number): Promise<boolean> {
     const submission = await this.knex('submissions').where('assignment_id', id).first()
     return !!submission

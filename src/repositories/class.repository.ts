@@ -65,6 +65,24 @@ export class ClassRepository {
     return row ?? null
   }
 
+  async findByIdScoped(id: number, schoolId: number): Promise<ClassWithDetails | null> {
+    const row = await this.knex('classes')
+      .join('academic_years', 'classes.academic_year_id', 'academic_years.id')
+      .join('schools', 'classes.school_id', 'schools.id')
+      .leftJoin('teachers as advisor', 'classes.class_advisor_id', 'advisor.id')
+      .leftJoin('users as advisor_user', 'advisor.user_id', 'advisor_user.id')
+      .where('classes.id', id)
+      .andWhere('classes.school_id', schoolId)
+      .select(
+        'classes.*',
+        'academic_years.year as academic_year_label',
+        'schools.name as school_name',
+        'advisor_user.name as class_advisor_name'
+      )
+      .first()
+    return row ?? null
+  }
+
   async create(data: CreateClassInput): Promise<Class> {
     const now = new Date()
     const [id] = await this.knex('classes').insert({

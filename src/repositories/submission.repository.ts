@@ -68,10 +68,24 @@ export class SubmissionRepository {
         'students.nis'
       )
     if (!row) return null
-    return {
-      ...row,
-      score: row.score !== null && row.score !== undefined ? Number(row.score) : null,
-    } as unknown as SubmissionWithDetails
+    return row as unknown as SubmissionWithDetails
+  }
+
+  async findByIdScoped(id: number, schoolId: number): Promise<SubmissionWithDetails | null> {
+    const [row] = await this.knex('submissions')
+      .join('assignments', 'submissions.assignment_id', 'assignments.id')
+      .join('students', 'submissions.student_id', 'students.id')
+      .join('users', 'students.user_id', 'users.id')
+      .where('submissions.id', id)
+      .andWhere('students.school_id', schoolId)
+      .select(
+        'submissions.*',
+        'assignments.title as assignment_title',
+        'users.name as student_name',
+        'students.nis'
+      )
+    if (!row) return null
+    return row as unknown as SubmissionWithDetails
   }
 
   async create(data: Partial<Submission>): Promise<number> {

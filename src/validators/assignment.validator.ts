@@ -9,6 +9,7 @@ export const CreateAssignmentSchema = z.object({
   class_id: z.coerce.number().int().positive(),
   subject_id: z.coerce.number().int().positive(),
   academic_year_id: z.coerce.number().int().positive(),
+  school_id: z.coerce.number().int().positive().optional(),
   title: z.string().min(1).max(200),
   description: z.string().optional().nullable(),
   due_date: z.union([z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format' }), z.date()]),

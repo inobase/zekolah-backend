@@ -5,6 +5,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Knex } from 'knex'
 import { GradeService } from '../services/grade.service'
+import { GradeRepository } from '../repositories/grade.repository'
+import { AppError } from '../utils/AppError'
 import {
   CreateGradeInput,
   UpdateGradeInput,
@@ -13,8 +15,10 @@ import {
 
 export class GradeController {
   private service: GradeService
+  private repo: GradeRepository
 
-  constructor(private knex: Knex) {
+  constructor(knex: Knex) {
+    this.repo = new GradeRepository(knex)
     this.service = new GradeService(knex)
   }
 
@@ -25,6 +29,11 @@ export class GradeController {
   }
 
   getById = async (req: FastifyRequest<{ Params: { id: number }; Reply: unknown }>, reply: FastifyReply) => {
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Grade not found')
+      return reply.send(scoped)
+    }
     return reply.send(await this.service.getById(req.params.id))
   }
 
@@ -33,10 +42,21 @@ export class GradeController {
   }
 
   update = async (req: FastifyRequest<{ Params: { id: number }; Body: UpdateGradeInput; Reply: unknown }>, reply: FastifyReply) => {
+    // Cross-school protection
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Grade not found')
+    }
     return reply.send(await this.service.update(req.params.id, req.body))
   }
 
   delete = async (req: FastifyRequest<{ Params: { id: number }; Reply: unknown }>, reply: FastifyReply) => {
+    // Cross-school protection
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Grade not found')
+      // findByIdScoped already proves the grade belongs to this school (via student linkage)
+    }
     await this.service.delete(req.params.id)
     return reply.code(204).send({ message: 'Grade deleted' })
   }

@@ -5,6 +5,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Knex } from 'knex'
 import { AttendanceService } from '../services/attendance.service'
+import { AttendanceRepository } from '../repositories/attendance.repository'
+import { AppError } from '../utils/AppError'
 import {
   CreateAttendanceInput,
   UpdateAttendanceInput,
@@ -13,8 +15,10 @@ import {
 
 export class AttendanceController {
   private service: AttendanceService
+  private repo: AttendanceRepository
 
-  constructor(private knex: Knex) {
+  constructor(knex: Knex) {
+    this.repo = new AttendanceRepository(knex)
     this.service = new AttendanceService(knex)
   }
 
@@ -25,6 +29,11 @@ export class AttendanceController {
   }
 
   getById = async (req: FastifyRequest<{ Params: { id: number }; Reply: unknown }>, reply: FastifyReply) => {
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Attendance not found')
+      return reply.send(scoped)
+    }
     return reply.send(await this.service.getById(req.params.id))
   }
 
@@ -33,10 +42,20 @@ export class AttendanceController {
   }
 
   update = async (req: FastifyRequest<{ Params: { id: number }; Body: UpdateAttendanceInput; Reply: unknown }>, reply: FastifyReply) => {
+    // Cross-school protection
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Attendance not found')
+    }
     return reply.send(await this.service.update(req.params.id, req.body))
   }
 
   delete = async (req: FastifyRequest<{ Params: { id: number }; Reply: unknown }>, reply: FastifyReply) => {
+    // Cross-school protection
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Attendance not found')
+    }
     await this.service.delete(req.params.id)
     return reply.code(204).send({ message: 'Attendance record deleted' })
   }

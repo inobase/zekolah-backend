@@ -32,6 +32,11 @@ export class SubjectRepository {
     return row ?? null
   }
 
+  async findByIdScoped(id: number, schoolId: number): Promise<Subject | null> {
+    const row = await this.knex('subjects').where({ id, school_id: schoolId }).first()
+    return row ?? null
+  }
+
   async findByCode(code: string): Promise<Subject | null> {
     const row = await this.knex('subjects').where({ code }).first()
     return row ?? null

@@ -5,6 +5,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Knex } from 'knex'
 import { SubmissionService } from '../services/submission.service'
+import { SubmissionRepository } from '../repositories/submission.repository'
+import { AppError } from '../utils/AppError'
 import {
   CreateSubmissionInput,
   UpdateSubmissionInput,
@@ -13,8 +15,10 @@ import {
 
 export class SubmissionController {
   private service: SubmissionService
+  private repo: SubmissionRepository
 
-  constructor(private knex: Knex) {
+  constructor(knex: Knex) {
+    this.repo = new SubmissionRepository(knex)
     this.service = new SubmissionService(knex)
   }
 
@@ -25,6 +29,11 @@ export class SubmissionController {
   }
 
   getById = async (req: FastifyRequest<{ Params: { id: number }; Reply: unknown }>, reply: FastifyReply) => {
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Submission not found')
+      return reply.send(scoped)
+    }
     return reply.send(await this.service.getById(req.params.id))
   }
 
@@ -33,10 +42,20 @@ export class SubmissionController {
   }
 
   update = async (req: FastifyRequest<{ Params: { id: number }; Body: UpdateSubmissionInput; Reply: unknown }>, reply: FastifyReply) => {
+    // Cross-school protection
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Submission not found')
+    }
     return reply.send(await this.service.update(req.params.id, req.body))
   }
 
   delete = async (req: FastifyRequest<{ Params: { id: number }; Reply: unknown }>, reply: FastifyReply) => {
+    // Cross-school protection
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(req.params.id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Submission not found')
+    }
     await this.service.delete(req.params.id)
     return reply.code(204).send({ message: 'Submission deleted' })
   }

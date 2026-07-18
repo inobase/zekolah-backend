@@ -75,7 +75,7 @@ export class UserRoleController {
     const roleAssignmentId = Number((req.params as { roleId: string }).roleId)
     const body = UpdateRoleInput.parse(req.body)
 
-    const role = await this.service.updateRole(roleAssignmentId, body, req.user.id)
+    const role = await this.service.updateRole(roleAssignmentId, body, req.user.id, req.activeSchoolId)
 
     return reply.send({
       message: 'Role assignment updated',
@@ -87,7 +87,7 @@ export class UserRoleController {
   remove = async (req: FastifyRequest, reply: FastifyReply) => {
     const roleAssignmentId = Number((req.params as { roleId: string }).roleId)
 
-    await this.service.deleteRole(roleAssignmentId, req.user.id)
+    await this.service.deleteRole(roleAssignmentId, req.user.id, req.activeSchoolId)
 
     return reply.code(204).send()
   }

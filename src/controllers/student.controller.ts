@@ -5,6 +5,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Knex } from 'knex'
 import { StudentService } from '../services/student.service'
+import { StudentRepository } from '../repositories/student.repository'
+import { AppError } from '../utils/AppError'
 import {
   CreateStudentInput,
   UpdateStudentInput,
@@ -13,8 +15,10 @@ import {
 
 export class StudentController {
   private service: StudentService
+  private repo: StudentRepository
 
-  constructor(private knex: Knex) {
+  constructor(knex: Knex) {
+    this.repo = new StudentRepository(knex)
     this.service = new StudentService(knex)
   }
 
@@ -27,6 +31,16 @@ export class StudentController {
 
   getById = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    if (req.activeSchoolId) {
+      const entity = await this.repo.findById(id)
+      if (!entity) throw new AppError('NOT_FOUND', 'Student not found')
+      if (entity.school_id !== req.activeSchoolId) {
+        throw new AppError('NOT_FOUND', 'Student not found')
+      }
+      return reply.send(entity)
+    }
+
     return reply.send(await this.service.getById(id))
   }
 
@@ -40,11 +54,31 @@ export class StudentController {
   update = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
     const body = req.body as UpdateStudentInput
+
+    // Cross-school protection: if school context is active, verify ownership
+    if (req.activeSchoolId) {
+      const student = await this.repo.findById(id)
+      if (!student) throw new AppError('NOT_FOUND', 'Student not found')
+      if (student.school_id !== req.activeSchoolId) {
+        throw new AppError('FORBIDDEN', 'You do not have permission to update this student')
+      }
+    }
+
     return reply.send(await this.service.update(id, body))
   }
 
   delete = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    // Cross-school protection: if school context is active, verify ownership
+    if (req.activeSchoolId) {
+      const student = await this.repo.findById(id)
+      if (!student) throw new AppError('NOT_FOUND', 'Student not found')
+      if (student.school_id !== req.activeSchoolId) {
+        throw new AppError('FORBIDDEN', 'You do not have permission to delete this student')
+      }
+    }
+
     await this.service.delete(id)
     return reply.code(204).send({ message: 'Student deleted' })
   }

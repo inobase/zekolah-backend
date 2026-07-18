@@ -37,12 +37,30 @@ export class UserController {
   update = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
     const body = req.body as UpdateUserInput
+
+    if (req.activeSchoolId) {
+      const existing = await this.service.getById(id)
+      if (!existing) return reply.code(404).send({ message: 'User not found' })
+      if ((existing as any).school_id !== req.activeSchoolId) {
+        return reply.code(403).send({ message: 'You do not have permission to update this user' })
+      }
+    }
+
     const user = await this.service.update(id, body as any)
     return reply.send(user)
   }
 
   deactivate = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    if (req.activeSchoolId) {
+      const existing = await this.service.getById(id)
+      if (!existing) return reply.code(404).send({ message: 'User not found' })
+      if ((existing as any).school_id !== req.activeSchoolId) {
+        return reply.code(403).send({ message: 'You do not have permission to deactivate this user' })
+      }
+    }
+
     await this.service.deactivate(id)
     return reply.send({ message: 'User deactivated' })
   }

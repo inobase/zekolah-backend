@@ -104,11 +104,17 @@ export class UserRoleService {
   async updateRole(
     roleAssignmentId: number,
     updates: { is_active?: boolean },
-    requesterUserId: number
+    requesterUserId: number,
+    schoolId?: number | null
   ): Promise<UserRoleWithDetails> {
     const existing = await this.userRoleRepo.findById(roleAssignmentId)
     if (!existing) {
       throw new AppError('NOT_FOUND', 'Role assignment not found')
+    }
+
+    // Cross-school protection
+    if (schoolId && existing.school_id !== schoolId) {
+      throw new AppError('FORBIDDEN', 'You do not have permission to update this role assignment')
     }
 
     // Authorization: only the user themselves or an admin can update
@@ -132,11 +138,17 @@ export class UserRoleService {
   // --- DELETE /user-roles/:roleAssignmentId ---
   async deleteRole(
     roleAssignmentId: number,
-    requesterUserId: number
+    requesterUserId: number,
+    schoolId?: number | null
   ): Promise<void> {
     const existing = await this.userRoleRepo.findById(roleAssignmentId)
     if (!existing) {
       throw new AppError('NOT_FOUND', 'Role assignment not found')
+    }
+
+    // Cross-school protection
+    if (schoolId && existing.school_id !== schoolId) {
+      throw new AppError('FORBIDDEN', 'You do not have permission to delete this role assignment')
     }
 
     if (existing.user_id !== requesterUserId) {

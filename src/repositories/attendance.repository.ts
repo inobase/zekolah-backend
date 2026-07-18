@@ -71,6 +71,16 @@ export class AttendanceRepository {
     return row || null
   }
 
+  async findByIdScoped(id: number, schoolId: number): Promise<AttendanceWithDetails | null> {
+    const [row] = await this.knex('attendance')
+      .join('students', 'attendance.student_id', 'students.id')
+      .join('users', 'students.user_id', 'users.id')
+      .select('attendance.*', 'students.nis', 'users.name as student_name')
+      .where('attendance.id', id)
+      .andWhere('students.school_id', schoolId)
+    return row || null
+  }
+
   async create(data: { student_id: number; subject_id: number; date: string; status: string }): Promise<number> {
     const now = new Date()
     const [id] = await this.knex('attendance').insert({ ...data, created_at: now, updated_at: now })

@@ -5,6 +5,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Knex } from 'knex'
 import { AcademicYearService } from '../services/academic-year.service'
+import { AcademicYearRepository } from '../repositories/academic-year.repository'
+import { AppError } from '../utils/AppError'
 import {
   CreateAcademicYearInput,
   UpdateAcademicYearInput,
@@ -13,8 +15,10 @@ import {
 
 export class AcademicYearController {
   private service: AcademicYearService
+  private repo: AcademicYearRepository
 
-  constructor(private knex: Knex) {
+  constructor(knex: Knex) {
+    this.repo = new AcademicYearRepository(knex)
     this.service = new AcademicYearService(knex)
   }
 
@@ -30,6 +34,13 @@ export class AcademicYearController {
 
   getById = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Academic year not found')
+      return reply.send(scoped)
+    }
+
     return reply.send(await this.service.getById(id))
   }
 
@@ -43,11 +54,23 @@ export class AcademicYearController {
   update = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
     const body = req.body as UpdateAcademicYearInput
+
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Academic year not found')
+    }
+
     return reply.send(await this.service.update(id, body))
   }
 
   delete = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    if (req.activeSchoolId) {
+      const scoped = await this.repo.findByIdScoped(id, req.activeSchoolId)
+      if (!scoped) throw new AppError('NOT_FOUND', 'Academic year not found')
+    }
+
     await this.service.delete(id)
     return reply.code(204).send({ message: 'Academic year deleted' })
   }

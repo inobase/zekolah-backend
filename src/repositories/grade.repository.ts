@@ -73,6 +73,23 @@ export class GradeRepository {
     return { ...row, max_score: Number(row.max_score), score: Number(row.score) } as unknown as GradeWithDetails
   }
 
+  async findByIdScoped(id: number, schoolId: number): Promise<GradeWithDetails | null> {
+    const [row] = await this.knex('grades')
+      .join('students', 'grades.student_id', 'students.id')
+      .join('subjects', 'grades.subject_id', 'subjects.id')
+      .join('users', 'students.user_id', 'users.id')
+      .where('grades.id', id)
+      .andWhere('students.school_id', schoolId)
+      .select(
+        'grades.*',
+        'subjects.name as subject_name',
+        'users.name as student_name',
+        'students.nis'
+      )
+    if (!row) return null
+    return { ...row, max_score: Number(row.max_score), score: Number(row.score) } as unknown as GradeWithDetails
+  }
+
   async create(data: Partial<Grade>): Promise<number> {
     const now = new Date()
     const [id] = await this.knex('grades').insert({ ...data, created_at: now, updated_at: now })

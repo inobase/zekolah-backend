@@ -57,6 +57,16 @@ export class AcademicYearRepository {
     return row ?? null
   }
 
+  async findByIdScoped(id: number, schoolId: number): Promise<AcademicYear & { school_name: string } | null> {
+    const row = await this.knex('academic_years')
+      .join('schools', 'academic_years.school_id', 'schools.id')
+      .select('academic_years.*', 'schools.name as school_name')
+      .where('academic_years.id', id)
+      .andWhere('academic_years.school_id', schoolId)
+      .first()
+    return row ?? null
+  }
+
   async create(data: CreateAcademicYearInput): Promise<AcademicYear> {
     const now = new Date()
     const [id] = await this.knex('academic_years').insert({

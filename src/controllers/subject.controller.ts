@@ -5,12 +5,16 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Knex } from 'knex'
 import { SubjectService } from '../services/subject.service'
+import { SubjectRepository } from '../repositories/subject.repository'
+import { AppError } from '../utils/AppError'
 import { CreateSubjectInput, UpdateSubjectInput, SubjectFilterInput } from '../validators/subject.validator'
 
 export class SubjectController {
   private service: SubjectService
+  private repo: SubjectRepository
 
-  constructor(private knex: Knex) {
+  constructor(knex: Knex) {
+    this.repo = new SubjectRepository(knex)
     this.service = new SubjectService(knex)
   }
 
@@ -22,6 +26,16 @@ export class SubjectController {
 
   getById = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    if (req.activeSchoolId) {
+      const entity = await this.repo.findById(id)
+      if (!entity) throw new AppError('NOT_FOUND', 'Subject not found')
+      if (entity.school_id !== req.activeSchoolId) {
+        throw new AppError('NOT_FOUND', 'Subject not found')
+      }
+      return reply.send(entity)
+    }
+
     return reply.send(await this.service.getById(id))
   }
 
@@ -35,11 +49,29 @@ export class SubjectController {
   update = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
     const body = req.body as UpdateSubjectInput
+
+    if (req.activeSchoolId) {
+      const entity = await this.repo.findById(id)
+      if (!entity) throw new AppError('NOT_FOUND', 'Subject not found')
+      if (entity.school_id !== req.activeSchoolId) {
+        throw new AppError('FORBIDDEN', 'You do not have permission to update this subject')
+      }
+    }
+
     return reply.send(await this.service.update(id, body))
   }
 
   delete = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    if (req.activeSchoolId) {
+      const entity = await this.repo.findById(id)
+      if (!entity) throw new AppError('NOT_FOUND', 'Subject not found')
+      if (entity.school_id !== req.activeSchoolId) {
+        throw new AppError('FORBIDDEN', 'You do not have permission to delete this subject')
+      }
+    }
+
     await this.service.delete(id)
     return reply.code(204).send({ message: 'Subject deleted' })
   }

@@ -5,6 +5,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Knex } from 'knex'
 import { ClassService } from '../services/class.service'
+import { ClassRepository } from '../repositories/class.repository'
+import { AppError } from '../utils/AppError'
 import {
   CreateClassInput,
   UpdateClassInput,
@@ -13,8 +15,10 @@ import {
 
 export class ClassController {
   private service: ClassService
+  private repo: ClassRepository
 
-  constructor(private knex: Knex) {
+  constructor(knex: Knex) {
+    this.repo = new ClassRepository(knex)
     this.service = new ClassService(knex)
   }
 
@@ -27,6 +31,16 @@ export class ClassController {
 
   getById = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    if (req.activeSchoolId) {
+      const entity = await this.repo.findById(id)
+      if (!entity) throw new AppError('NOT_FOUND', 'Class not found')
+      if (entity.school_id !== req.activeSchoolId) {
+        throw new AppError('NOT_FOUND', 'Class not found')
+      }
+      return reply.send(entity)
+    }
+
     return reply.send(await this.service.getById(id))
   }
 
@@ -40,11 +54,31 @@ export class ClassController {
   update = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
     const body = req.body as UpdateClassInput
+
+    // Cross-school protection
+    if (req.activeSchoolId) {
+      const entity = await this.repo.findById(id)
+      if (!entity) throw new AppError('NOT_FOUND', 'Class not found')
+      if (entity.school_id !== req.activeSchoolId) {
+        throw new AppError('FORBIDDEN', 'You do not have permission to update this class')
+      }
+    }
+
     return reply.send(await this.service.update(id, body))
   }
 
   delete = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
+
+    // Cross-school protection
+    if (req.activeSchoolId) {
+      const entity = await this.repo.findById(id)
+      if (!entity) throw new AppError('NOT_FOUND', 'Class not found')
+      if (entity.school_id !== req.activeSchoolId) {
+        throw new AppError('FORBIDDEN', 'You do not have permission to delete this class')
+      }
+    }
+
     await this.service.delete(id)
     return reply.code(204).send({ message: 'Class deleted' })
   }

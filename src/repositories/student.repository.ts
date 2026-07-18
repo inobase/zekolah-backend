@@ -59,6 +59,16 @@ export class StudentRepository {
     return row ?? null
   }
 
+  async findByIdScoped(id: number, schoolId: number): Promise<StudentWithUser | null> {
+    const row = await this.knex('students')
+      .join('users', 'students.user_id', 'users.id')
+      .select('students.*', 'users.name', 'users.email')
+      .where('students.id', id)
+      .andWhere('students.school_id', schoolId)
+      .first()
+    return row ?? null
+  }
+
   async findByNis(nis: string): Promise<Student | null> {
     const row = await this.knex('students').where({ nis }).first()
     return row ?? null
