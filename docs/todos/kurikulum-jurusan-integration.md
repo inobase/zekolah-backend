@@ -273,76 +273,6 @@
 
 ---
 
-## Phase 3 — Curriculum Templates
-
-> Super Admin membuat template kurikulum per program keahlian. Sekolah browse & aktifkan template.
-
-### 3.1 — Tabel `kurikulum_templates` (Global — Super Admin)
-
-- [ ] **T3.1** Buat migration `023_create_kurikulum_templates.ts`
-  - [ ] Kolom: `id`, `program_id` (FK → programs), `specialization_id` (FK → specializations, nullable), `name`, `version` (VARCHAR 20), `description`, `is_active` BOOLEAN DEFAULT TRUE, timestamps
-  - [ ] Unique: `(program_id, specialization_id, version)`
-  - [ ] Seed: 1 template default untuk masing-masing program keahlian yang sudah ada
-  - [ ] Down: DROP TABLE IF EXISTS `kurikulum_template_structures`, DROP TABLE `kurikulum_templates`
-
-- [ ] **T3.2** Buat migration `023_b_kurikulum_template_structures.ts` (dependency: kurikulum_templates)
-  - [ ] Kolom: `id`, `template_id` (FK → kurikulum_templates CASCADE DELETE), `semester` (INT 1-8), `subject_name` (VARCHAR 200), `subject_code` (VARCHAR 50), `subject_type` ENUM('UMUM','DD','DP','SP'), `jp_per_minggu` (INT), `jp_per_semester` (computed INT), `theory_hours` (INT), `practice_hours` (INT), `note` TEXT, `sort_order` (INT), timestamps
-  - [ ] Index: `(template_id, semester, sort_order)`
-  - [ ] Seed: sample structures untuk template default
-
-### 3.2 — Repositories & Services
-
-- [ ] **T3.3** Buat `src/models/interfaces/KurikulumInterface.ts`
-  - [ ] `KurikulumTemplate`, `KurikulumTemplateCreateInput`, `KurikulumTemplateStructure`
-
-- [ ] **T3.4** Buat `src/repositories/kurikulum.repository.ts`
-  - [ ] CRUD untuk template: `findAll`, `findById`, `create`, `update`, `deactivate`
-  - [ ] CRUD untuk structure: `findByTemplate(templateId)`, `createBatch(templateId, structures[])`, `updateBatch(templateId, structures[])`
-  - [ ] Helper: `getTemplateDetail(templateId)` — JOIN dengan programs + specializations + structures
-
-- [ ] **T3.5** Buat `src/services/kurikulum.service.ts`
-  - [ ] Template CRUD + validate unique `(program_id, specialization_id, version)`
-  - [ ] Structure management: `addStructure`, `updateStructure`, `deleteStructure`
-  - [ ] Batch: `importStructures(templateId, structures[])` — bulk insert/update
-  - [ ] Validation: `jp_per_semester` = `jp_per_minggu * 18` (asumsi 18 pertemuan per semester)
-
-### 3.3 — Controllers & Routes
-
-- [ ] **T3.6** Buat `src/controllers/kurikulum.controller.ts`
-  - [ ] `listTemplates` — GET /api/v1/kurikulum/templates (SUPER_ADMIN)
-  - [ ] `getTemplate` — GET /api/v1/kurikulum/templates/:id (SUPER_ADMIN)
-  - [ ] `createTemplate` — POST /api/v1/kurikulum/templates (SUPER_ADMIN)
-  - [ ] `updateTemplate` — PATCH /api/v1/kurikulum/templates/:id (SUPER_ADMIN)
-  - [ ] `deactivateTemplate` — DELETE /api/v1/kurikulum/templates/:id (SUPER_ADMIN)
-  - [ ] `getTemplateStructures` — GET /api/v1/kurikulum/templates/:id/structures (SUPER_ADMIN)
-  - [ ] `createStructure` — POST /api/v1/kurikulum/templates/:id/structures (SUPER_ADMIN)
-  - [ ] `updateStructure` — PATCH /api/v1/kurikulum/templates/:id/structures/:structureId (SUPER_ADMIN)
-  - [ ] `deleteStructure` — DELETE /api/v1/kurikulum/templates/:id/structures/:structureId (SUPER_ADMIN)
-
-- [ ] **T3.7** Buat `src/validators/kurikulum.validator.ts`
-  - [ ] `TemplateCreateSchema` — program_id, specialization_id (nullable), name, version, description
-  - [ ] `TemplateUpdateSchema` — partial
-  - [ ] `TemplateStructureSchema` — semester, subject_name, subject_code, subject_type, jp_per_minggu, theory_hours, practice_hours, sort_order
-  - [ ] Response schemas: `TemplateResponseSchema`, `TemplateListResponseSchema`, `StructureResponseSchema`, `StructureListResponseSchema`
-
-- [ ] **T3.8** Buat `src/routes/kurikulum.routes.ts`
-  - [ ] Semua endpoint di atas dengan tags: 'kurikulum', security, descriptions
-  - [ ] Guard: `requireRole(['super_admin'])`
-
-- [ ] **T3.9** Register route di `src/routes/index.ts` — prefix `/kurikulum`
-
-### 3.4 — Tests
-
-- [ ] **T3.10** `tests/kurikulum.test.ts`
-  - [ ] SUPER_ADMIN CRUD templates + structures
-  - [ ] Non-super_admin access → 403
-  - [ ] Validate unique `(program_id, specialization_id, version)`
-  - [ ] Validate `jp_per_minggu > 0`
-  - [ ] Validate `subject_type` is one of ENUM values
-  - [ ] Template dengan structures → detail endpoint returns joined data
-
----
-
 ## Phase 4 — School Adoption & School Subjects
 
 > Sekolah mengaktifkan template kurikulum. Template di-copy sebagai `school_subjects` yang bisa dimodifikasi.
@@ -550,11 +480,11 @@
 |-------|--------|-----------|
 | P1: `education_level` di `schools` | ✅ Complete (8/8 tasks) | 1-2 |
 | P2: Program Hierarchy | ✅ Complete (T2.1–T2.25, migrations 020–022, 15 tests) | 2–3 |
-| P3: Curriculum Templates | ⬜ Not Started | 2-3 |
+| P3: Curriculum Templates | ❌ Skipped | - |
 | P4: School Adoption & School Subjects | ⬜ Not Started | 2-3 |
 | P5: Schedules & Time Slots | ⬜ Not Started | 3-4 |
 | P6: Integration & Cleanup | ⬜ Not Started | 2-3 |
-| **Total** | | **~12-18 hari** |
+| **Total** | | **~9-12 hari** |
 
 ---
 
@@ -566,3 +496,4 @@
 - ✅ `tests/school-program.test.ts` — 15 tests passing (activation, deactivation, specialization management, cross-school isolation, cascade, access control)
 - ✅ TypeScript compilation: 0 errors
 - ✅ `tests/helper.ts` updated with new tables in truncate list
+- ❌ Phase 3 (Curriculum Templates) — **SKIPPED** by decision
