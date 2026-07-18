@@ -25,11 +25,11 @@ export class SubmissionService {
     data: any[]
     pagination: { page: number; limit: number; total: number }
   }> {
-    const { page, limit, assignment_id, student_id } = filter
+    const { page, limit, assignment_id, student_id, school_id } = filter
     const offset = (page - 1) * limit
     const [data, total] = await Promise.all([
-      this.repo.findAll({ assignment_id, student_id, limit, offset }),
-      this.repo.count({ assignment_id, student_id }),
+      this.repo.findAll({ assignment_id, student_id, school_id, limit, offset }),
+      this.repo.count({ assignment_id, student_id, school_id }),
     ])
     return { data, pagination: { page, limit, total } }
   }
