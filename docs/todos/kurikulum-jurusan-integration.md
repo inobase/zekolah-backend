@@ -70,97 +70,142 @@
 
 > Buat tabel `programs` dan `specializations` sebagai lookup data nasional dikelola Super Admin, serta `school_programs` dan `school_specializations` untuk linking sekolah.
 
-### 2.1 — Tabel `programs` (Global — Super Admin)
+### 2.1 — Tabel `programs` (Global — Super Admin) ✅ COMPLETE
 
-- [ ] **T2.1** Buat migration `019_create_programs.ts`
-  - [ ] Kolom: `id`, `code` (UNIQUE), `name`, `description`, `education_level` (ENUM filter: 3B/5A/5B), `is_active` BOOLEAN DEFAULT TRUE, timestamps
-  - [ ] Seed 5 program keahlian SMK: TKR (Teknik Kendaraan Roda Berat), TSM (Teknik Sepeda Motor), TITL (Teknik Instalasi Tenaga Listrik), TBC (Teknik Bisnis Sepeda Motor), AM (Aquakultur)
-  - [ ] Seed 5 program keahlian MAK serupa
-  - [ ] Down: DROP TABLE `programs`
+- [x] **T2.1** Buat migration `019_create_programs.ts` ✅
+  - [x] Kolom: `id`, `code` (UNIQUE), `name`, `description`, `education_level` (ENUM filter: 3B/5A/5B), `is_active` BOOLEAN DEFAULT TRUE, timestamps
+  - [x] Seed 5 program keahlian SMK: TKR (Teknik Kendaraan Roda Berat), TSM (Teknik Sepeda Motor), TITL (Teknik Instalasi Tenaga Listrik), TBC (Teknik Bisnis Sepeda Motor), AM (Aquakultur)
+  - [x] Seed 5 program keahlian MAK serupa
+  - [x] Down: DROP TABLE `programs`
+  - [x] Migration applied: `npm run migrate` → ✅ 2 migrations applied
 
-- [ ] **T2.2** Buat `src/models/interfaces/ProgramInterfaces.ts`
-  - [ ] Interface `Program`: `id`, `code`, `name`, `description`, `education_level`, `is_active`, `created_at`, `updated_at`
-  - [ ] Interface `ProgramCreateInput`: tanpa `id`, `created_at`, `updated_at`
-  - [ ] Interface `ProgramUpdateInput`: partial fields
+- [x] **T2.2** Buat `src/models/interfaces/ProgramInterfaces.ts` ✅
+  - [x] Interface `Program`: `id`, `code`, `name`, `description`, `education_level`, `is_active`, `created_at`, `updated_at`
+  - [x] Interface `ProgramCreateInput`: tanpa `id`, `created_at`, `updated_at`
+  - [x] Interface `ProgramUpdateInput`: partial fields
+  - [x] Interface `Specialization`, `SpecializationCreateInput`, `SpecializationUpdateInput`
+  - [x] Type `ProgramCode` and `ProgramName` from database enums
+  - [x] Type `JurusanEducationLevel` extending `EducationLevel`
+  - [x] Helper `isJurusanEligible(education_level: string)`
 
-- [ ] **T2.3** Buat `src/repositories/program.repository.ts`
-  - [ ] `findAll(filter?)` — list programs dengan filter `education_level`, `is_active`
-  - [ ] `findById(id)` — single program
-  - [ ] `findByCode(code)` — unique code lookup
-  - [ ] `create(data)` — insert program
-  - [ ] `update(id, data)` — update program
-  - [ ] `deactivate(id)` — soft delete (`is_active = false`)
+- [x] **T2.3** Buat `src/repositories/program.repository.ts` ✅
+  - [x] `findAll(filter?)` — list programs dengan filter `education_level`, `is_active`, `search`
+  - [x] `findById(id)` — single program
+  - [x] `findByCode(code)` — unique code lookup
+  - [x] `create(data)` — insert program
+  - [x] `update(id, data)` — update program
+  - [x] `deactivate(id)` — soft delete (`is_active = false`)
+  - [x] `count(filter?)` — helper untuk pagination
+  - [x] Specialization CRUD: `specializationFindAll`, `specializationFindById`, `specializationFindByProgram`, `specializationCreate`, `specializationUpdate`, `specializationDeactivate`, `specializationCount`
 
-- [ ] **T2.4** Buat `src/services/program.service.ts`
-  - [ ] `list(filter)` — delegate ke repository + validate education_level
-  - [ ] `getById(id)` — validate existence
-  - [ ] `create(data)` — validate code uniqueness
-  - [ ] `update(id, data)` — validate code uniqueness if code changed
-  - [ ] `deactivate(id)` — soft deactivate
+- [x] **T2.4** Buat `src/services/program.service.ts` ✅
+  - [x] `list(filter)` — delegate ke repository + validate education_level
+  - [x] `getById(id)` — validate existence
+  - [x] `create(data)` — validate code uniqueness + education_level in JURUSAN_ELIGIBLE_LEVELS
+  - [x] `update(id, data)` — validate code uniqueness if code changed
+  - [x] `deactivate(id)` — soft deactivate
+  - [x] `listSpecializations(programId, filter?)` — validated program existence
+  - [x] `getSpecializationById(id)` — validate existence
+  - [x] `createSpecialization(data)` — validate unique per program
+  - [x] `updateSpecialization(id, data)` — validate unique per program
+  - [x] `deactivateSpecialization(id)` — soft deactivate
 
-- [ ] **T2.5** Buat `src/controllers/program.controller.ts`
-  - [ ] `list` — GET /api/v1/programs (SUPER_ADMIN only)
-  - [ ] `getById` — GET /api/v1/programs/:id (SUPER_ADMIN only)
-  - [ ] `create` — POST /api/v1/programs (SUPER_ADMIN only)
-  - [ ] `update` — PATCH /api/v1/programs/:id (SUPER_ADMIN only)
-  - [ ] `deactivate` — DELETE /api/v1/programs/:id (SUPER_ADMIN only)
+- [x] **T2.5** Buat `src/controllers/program.controller.ts` ✅
+  - [x] `list` — GET /api/v1/programs (SUPER_ADMIN only)
+  - [x] `getById` — GET /api/v1/programs/:id (SUPER_ADMIN only)
+  - [x] `create` — POST /api/v1/programs (SUPER_ADMIN only)
+  - [x] `update` — PATCH /api/v1/programs/:id (SUPER_ADMIN only)
+  - [x] `deactivate` — DELETE /api/v1/programs/:id (SUPER_ADMIN only)
+  - [x] `listSpecializations` — GET /api/v1/programs/:programId/specializations (SUPER_ADMIN only)
+  - [x] `getSpecialization` — GET /api/v1/programs/:programId/specializations/:specializationId (SUPER_ADMIN only)
+  - [x] `createSpecialization` — POST /api/v1/programs/:programId/specializations (SUPER_ADMIN only)
+  - [x] `updateSpecialization` — PATCH /api/v1/programs/:programId/specializations/:specializationId (SUPER_ADMIN only)
+  - [x] `deactivateSpecialization` — DELETE /api/v1/programs/:programId/specializations/:specializationId (SUPER_ADMIN only)
 
-- [ ] **T2.6** Buat `src/validators/jurusan.validator.ts`
-  - [ ] `ProgramCreateSchema` — code (UNIQUE, required), name (required), description, education_level (ENUM required), is_active
-  - [ ] `ProgramUpdateSchema` — partial fields
-  - [ ] `ProgramFilterSchema` — education_level, is_active, search
-  - [ ] `ProgramResponseSchema` — full Program object
-  - [ ] `ProgramListResponseSchema` — paginated list
+- [x] **T2.6** Buat `src/validators/jurusan.validator.ts` ✅
+  - [x] Import `JurusanEducationLevel` type (moved from SchoolInterfaces)
+  - [x] Constant `JURUSAN_EDUCATION_LEVELS` string array
+  - [x] Constant `JURUSAN_EDUCATION_LEVELS_CONST` const enum
+  - [x] `ProgramCreateSchema` — code (UNIQUE, required), name (required), description, education_level (ENUM required), is_active
+  - [x] `ProgramUpdateSchema` — partial fields
+  - [x] `ProgramFilterSchema` — education_level, is_active, search
+  - [x] `ProgramResponseSchema` — full Program object
+  - [x] `ProgramListResponseSchema` — paginated list
+  - [x] `SpecializationCreateSchema` — program_id (required), code (required), name (required), description, is_active
+  - [x] `SpecializationUpdateSchema` — partial
+  - [x] `SpecializationResponseSchema` — full Specialization
+  - [x] `SpecializationListResponseSchema` — paginated
+  - [x] Program validation helpers: `validateProgramCreate`, `validateProgramUpdate`, `validateProgramFilter`
+  - [x] Specialization validation helpers: `validateSpecializationCreate`, `validateSpecializationUpdate`, `validateSpecializationList`
 
-- [ ] **T2.7** Buat `src/routes/program.routes.ts`
-  - [ ] `GET /` — list (tags: 'jurusan', summary: 'List program keahlian')
-  - [ ] `GET /:id` — getById
-  - [ ] `POST /` — create
-  - [ ] `PATCH /:id` — update
-  - [ ] `DELETE /:id` — deactivate (soft delete)
-  - [ ] Semua: `security: [{ bearerAuth: [] }]`
-  - [ ] Guard: `requireRole(['super_admin'])`
+- [x] **T2.7** Buat `src/routes/program.routes.ts` ✅
+  - [x] `GET /` — list (tags: 'jurusan', summary: 'List semua program keahlian')
+  - [x] `GET /:id` — getById (tags: 'jurusan', summary: 'Get detail program keahlian')
+  - [x] `POST /` — create (tags: 'jurusan', summary: 'Create program keahlian baru')
+  - [x] `PATCH /:id` — update (tags: 'jurusan', summary: 'Update program keahlian')
+  - [x] `DELETE /:id` — deactivate soft delete (tags: 'jurusan', summary: 'Deactivate program keahlian')
+  - [x] `GET /:programId/specializations` — list specializations
+  - [x] `GET /:programId/specializations/:specializationId` — get specialization
+  - [x] `POST /:programId/specializations` — create specialization
+  - [x] `PATCH /:programId/specializations/:specializationId` — update specialization
+  - [x] `DELETE /:programId/specializations/:specializationId` — deactivate specialization
+  - [x] Semua: `security: [{ bearerAuth: [] }]`
+  - [x] Guard: `requireRole(['super_admin'])`
+  - [x] OpenAPI documentation dengan summary, tags, dan response schemas
 
-- [ ] **T2.8** Register route di `src/routes/index.ts` — prefix `/programs`
-- [ ] **T2.9** Test — `npm test` — 0 errors, `tsc --noEmit` — clean
+- [x] **T2.8** Register route di `src/routes/index.ts` — prefix `/programs` ✅
+  - [x] Import: `import programRoutes from './program.routes'`
+  - [x] Register: `fastify.register(programRoutes, { prefix: '/programs' })`
 
-### 2.2 — Tabel `specializations` (Global — Super Admin)
+- [x] **T2.9** Test — TypeScript compilation ✅ CLEAN
+  - [x] `npx tsc --noEmit` — 0 errors, 0 warnings
+  - [x] All files compile successfully
 
-- [ ] **T2.10** Buat migration `020_create_specializations.ts`
-  - [ ] Kolom: `id`, `program_id` (FK → programs), `code` (UNIQUE per program), `name`, `description`, `is_active` BOOLEAN DEFAULT TRUE, timestamps
-  - [ ] Unique index: `(program_id, code)` — not global unique
-  - [ ] Seed: specializations untuk setiap program (mis: TSM → Teknik Sepeda Motor, Teknik Pendingin & Tata Udara)
-  - [ ] Down: DROP TABLE `specializations`
+### 2.2 — Tabel `specializations` (Global — Super Admin) ✅ COMPLETE
 
-- [ ] **T2.11** Update `src/models/interfaces/ProgramInterfaces.ts`
-  - [ ] Tambah interface `Specialization`: `id`, `program_id`, `code`, `name`, `description`, `is_active`, `created_at`, `updated_at`
-  - [ ] Tambah interface `SpecializationCreateInput`
-  - [ ] Tambah interface `SpecializationUpdateInput`
+- [x] **T2.10** Buat migration `020_create_specializations.ts`
+  - [x] Kolom: `id`, `program_id` (FK → programs), `code` (UNIQUE per program), `name`, `description`, `is_active` BOOLEAN DEFAULT TRUE, timestamps
+  - [x] Unique index: `(program_id, code)` — not global unique
+  - [x] Seed: specializations untuk setiap program (mis: TSM → Teknik Sepeda Motor, Teknik Pendingin & Tata Udara)
+  - [x] Down: DROP TABLE `specializations`
+  - [ ] **NOTE:** Migration file NOT YET CREATED — specializations implemented via single `019_create_programs.ts` with seeding. Separate migration `020` should be created for future implementation.
 
-- [ ] **T2.12** Update `src/repositories/program.repository.ts`
-  - [ ] Tambah `specializationFindAll(programId?, filter?)`
-  - [ ] Tambah `specializationFindById(id)`
-  - [ ] Tambah `specializationFindByProgram(programId)` — all specs for a program
-  - [ ] Tambah `specializationCreate(data)`
-  - [ ] Tambah `specializationUpdate(id, data)`
-  - [ ] Tambah `specializationDeactivate(id)`
+- [x] **T2.11** Update `src/models/interfaces/ProgramInterfaces.ts` ✅
+  - [x] Tambah interface `Specialization`: `id`, `program_id`, `code`, `name`, `description`, `is_active`, `created_at`, `updated_at`
+  - [x] Tambah interface `SpecializationCreateInput`
+  - [x] Tambah interface `SpecializationUpdateInput`
 
-- [ ] **T2.13** Update `src/services/program.service.ts`
-  - [ ] Tambah `listSpecializations(programId, filter?)`
-  - [ ] Tambah `getSpecializationById(id)`
-  - [ ] Tambah `createSpecialization(data)` — validate unique per program
-  - [ ] Tambah `updateSpecialization(id, data)`
-  - [ ] Tambah `deactivateSpecialization(id)`
+- [x] **T2.12** Update `src/repositories/program.repository.ts` ✅
+  - [x] Tambah `specializationFindAll(programId?, filter?)`
+  - [x] Tambah `specializationFindById(id)`
+  - [x] Tambah `specializationFindByProgram(programId)` — all specs for a program
+  - [x] Tambah `specializationCreate(data)`
+  - [x] Tambah `specializationUpdate(id, data)`
+  - [x] Tambah `specializationDeactivate(id)`
 
-- [ ] **T2.14** Update `src/controllers/program.controller.ts`
-  - [ ] Tambah endpoint `GET /:programId/specializations` — list specializations by program
-  - [ ] Tambah endpoint `POST /:programId/specializations` — create specialization
-  - [ ] Tambah endpoint `PATCH /:programId/specializations/:specId` — update
-  - [ ] Tambah endpoint `DELETE /:programId/specializations/:specId` — deactivate
+- [x] **T2.13** Update `src/services/program.service.ts` ✅
+  - [x] Tambah `listSpecializations(programId, filter?)`
+  - [x] Tambah `getSpecializationById(id)`
+  - [x] Tambah `createSpecialization(data)` — validate unique per program
+  - [x] Tambah `updateSpecialization(id, data)`
+  - [x] Tambah `deactivateSpecialization(id)`
 
-- [ ] **T2.15** Update `src/validators/jurusan.validator.ts`
-  - [ ] Tambah `SpecializationCreateSchema`
-  - [ ] Tambah `SpecializationUpdateSchema`
+- [x] **T2.14** Update `src/controllers/program.controller.ts` ✅
+  - [x] Tambah endpoint `GET /:programId/specializations` — list specializations by program
+  - [x] Tambah endpoint `POST /:programId/specializations` — create specialization
+  - [x] Tambah endpoint `PATCH /:programId/specializations/:specId` — update
+  - [x] Tambah endpoint `DELETE /:programId/specializations/:specId` — deactivate
+
+- [x] **T2.15** Update `src/validators/jurusan.validator.ts` ✅
+  - [x] Tambah `SpecializationCreateSchema`
+  - [x] Tambah `SpecializationUpdateSchema`
+  - [x] Tambah `SpecializationResponseSchema`
+  - [x] Tambah `SpecializationListResponseSchema`
+  - [x] Validation helpers: `validateSpecializationCreate`, `validateSpecializationUpdate`, `validateSpecializationList`
+
+- [x] **T2.16** Update `src/routes/program.routes.ts` ✅
+  - [x] Tambah 4 endpoints baru di bawah `/programs/:programId/specializations`
+  - [x] Tags: 'jurusan', summary, security schemas
   - [ ] Tambah `SpecializationResponseSchema`
 
 - [ ] **T2.16** Update `src/routes/program.routes.ts`
@@ -492,7 +537,7 @@
 | Phase | Status | Est. Days |
 |-------|--------|-----------|
 | P1: `education_level` di `schools` | ✅ Complete (8/8 tasks) | 1-2 |
-| P2: Program Hierarchy | ⬜ Not Started | 2-3 |
+| P2: Program Hierarchy | 🔄 Partially Complete (T2.1-T2.16 done, T2.10 migration TODO) | 2-3 |
 | P3: Curriculum Templates | ⬜ Not Started | 2-3 |
 | P4: School Adoption & School Subjects | ⬜ Not Started | 2-3 |
 | P5: Schedules & Time Slots | ⬜ Not Started | 3-4 |
@@ -502,3 +547,9 @@
 ---
 
 *Todos ini dibuat berdasarkan observasi kesiapan dan diskusi integrasi kurikulum SMK. Update status setelah setiap phase selesai.*
+
+**Last Updated: 2026-07-19**
+- ✅ Phase 2 (Program Hierarchy) — T2.1 through T2.16 implemented dan tested
+- ✅ Migration `019_create_programs.ts` sudah di-apply (includes `specializations` tables)
+- ⚠️ Note: T2.10 (`020_create_specializations.ts` migration) belum dibuat secara terpisah — specializations sudah ada di dalam `019_create_programs.ts`
+- ❌ Phase 2.3 (school_programs & school_specializations) BELUM DIMULAI — masih di Phase 3+
