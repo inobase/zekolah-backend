@@ -20,6 +20,7 @@ import { userRoleRoutes } from './userRole.routes';
 import { programRoutes } from './program.routes';
 import { schoolProgramRoutes } from './schoolProgram.routes';
 import { schoolSubjectRoutes } from './schoolSubject.routes';
+import { scheduleRoutes } from './schedule.routes';
 
 export const apiRoutes = async (app: FastifyZodInstance): Promise<void> => {
   // Health check
@@ -45,4 +46,5 @@ export const apiRoutes = async (app: FastifyZodInstance): Promise<void> => {
   await app.register(programRoutes, { prefix: '/programs' });
   await app.register(schoolProgramRoutes, { prefix: '/schools' });
   await app.register(schoolSubjectRoutes, { prefix: '/schools' });
+  await app.register(scheduleRoutes, { prefix: '/schedules' });
 };

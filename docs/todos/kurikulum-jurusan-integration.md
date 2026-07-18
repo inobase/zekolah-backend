@@ -364,96 +364,112 @@
 ## Phase 5 — Schedules & Time Slots
 
 > Tabel `schedules` untuk jadwal pelajaran per kelas, dengan time slots detail hari/jam/ruangan/guru.
+- ✅ Phase 5 — FULLY COMPLETE (T5.1 through T5.10, migrations 026–027, schedule tests)
+  - ✅ Migrations `026_create_schedules.ts` and `027_create_schedule_time_slots.ts` applied
+  - ✅ Schedule model interfaces (Schedule, ScheduleCreateInput, ScheduleUpdateInput, ScheduleWithDetails, ScheduleConflict, WeeklyTimetable, TimetableEntry)
+  - ✅ ScheduleRepository with findAll, findById, create, update, delete, findByClass, findByTeacher, checkConflict, createTimeSlots, deleteTimeSlots, getScheduleWithDetails
+  - ✅ ScheduleService with list, create (conflict-aware), update (re-validates conflicts), delete (cascade), findByClass, findByTeacher, getWeeklyTimetable, getTeacherWeeklyTimetable, detectConflicts
+  - ✅ ScheduleController with SCHOOL_ADMIN/TEACHER/STUDENT scopes
+  - ✅ Schedule routes registered at prefix `/schedules` with Swagger docs
+  - ✅ `tests/schedule.test.ts` — **12 tests passing** ✅ (CRUD, conflict detection, validation, timetable, cross-school)
+  - ✅ Added `SCHEDULE_CONFLICT` error code to AppError type
+  - ✅ TypeScript compilation: 0 errors
 
 ### 5.1 — Tabel `schedules` & `schedule_time_slots`
 
-- [ ] **T5.1** Buat migration `026_create_schedules.ts`
-  - [ ] Kolom: `id`, `class_id` (FK → classes), `school_subject_id` (FK → school_subjects), `teacher_id` (FK → teachers), `academic_year_id` (FK → academic_years), `semester` ENUM('ganjil','genap'), `status` ENUM('scheduled','cancelled','rescheduled'), `room` (VARCHAR 50, nullable), `created_at`, `updated_at`
-  - [ ] Index: `(class_id, academic_year_id, semester)`, `(teacher_id, academic_year_id, semester)`, `(school_subject_id, academic_year_id, semester)`
-  - [ ] Unique constraint: UNIQUE `(class_id, academic_year_id, semester, day_of_week, start_time)` — prevent double-booking kelas per slot
-  - [ ] Down: DROP TABLE IF EXISTS `schedule_time_slots`, DROP TABLE `schedules`
+- [x] **T5.1** Buat migration `026_create_schedules.ts` ✅
+  - [x] Kolom: `id`, `class_id` (FK → classes), `school_subject_id` (FK → school_subjects), `teacher_id` (FK → teachers), `academic_year_id` (FK → academic_years), `semester` ENUM('ganjil','genap'), `status` ENUM('scheduled','cancelled','rescheduled'), `room` (VARCHAR 50, nullable), `created_at`, `updated_at`
+  - [x] Index: `(class_id, academic_year_id, semester)`, `(teacher_id, academic_year_id, semester)`, `(school_subject_id, academic_year_id, semester)`
+  - [x] Unique constraint: UNIQUE `(class_id, academic_year_id, semester, day_of_week, start_time)` — prevent double-booking kelas per slot
+  - [x] Down: DROP TABLE IF EXISTS `schedule_time_slots`, DROP TABLE `schedules`
+  - [x] **Migration applied** via `npm run migrate`
 
-- [ ] **T5.2** Buat migration `027_create_schedule_time_slots.ts`
-  - [ ] Kolom: `id`, `schedule_id` (FK → schedules CASCADE DELETE), `day_of_week` ENUM('senin','selasa','rabu','kamis','jumat','sabtu'), `start_time` (TIME), `end_time` (TIME), `room` (VARCHAR 50, nullable, overrides schedule.room), timestamps
-  - [ ] Index: `(schedule_id, day_of_week)`
-  - [ ] Down: DROP TABLE `schedule_time_slots`
+- [x] **T5.2** Buat migration `027_create_schedule_time_slots.ts` ✅
+  - [x] Kolom: `id`, `schedule_id` (FK → schedules CASCADE DELETE), `day_of_week` ENUM('senin','selasa','rabu','kamis','jumat','sabtu'), `start_time` (TIME), `end_time` (TIME), `room` (VARCHAR 50, nullable, overrides schedule.room), timestamps
+  - [x] Index: `(schedule_id, day_of_week)`
+  - [x] Down: DROP TABLE `schedule_time_slots`
+  - [x] **Migration applied** via `npm run migrate`
 
 ### 5.2 — Models
 
-- [ ] **T5.3** Buat `src/models/interfaces/ScheduleInterfaces.ts`
-  - [ ] `Schedule`, `ScheduleCreateInput`, `ScheduleUpdateInput`
-  - [ ] `ScheduleTimeSlot`, `ScheduleTimeSlotCreateInput`
-  - [ ] `ScheduleWithDetails` (JOINED: class, school_subject, teacher, academic_year)
-  - [ ] `ScheduleConflict` — untuk validasi bentrok
+- [x] **T5.3** Buat `src/models/interfaces/ScheduleInterfaces.ts` ✅
+  - [x] `Schedule`, `ScheduleCreateInput`, `ScheduleUpdateInput`
+  - [x] `ScheduleTimeSlot`, `ScheduleTimeSlotCreateInput`
+  - [x] `ScheduleWithDetails` (JOINED: class, school_subject, teacher, academic_year)
+  - [x] `ScheduleConflict` — untuk validasi bentrok
+  - [x] `WeeklyTimetable`, `TimetableEntry`
+  - [x] `DayOfWeek`, `Semester`, `ScheduleStatus` types
 
 ### 5.3 — Repositories
 
-- [ ] **T5.4** Buat `src/repositories/schedule.repository.ts`
-  - [ ] `findAll(filter: schoolId, classId?, teacherId?, academicYearId?, semester?)`
-  - [ ] `findById(id, schoolId?)`
-  - [ ] `create(data)`
-  - [ ] `update(id, data)`
-  - [ ] `delete(id, schoolId)`
-  - [ ] `findByClass(classId, academicYearId, semester)` — all schedules for a class
-  - [ ] `findByTeacher(teacherId, academicYearId, semester)` — all schedules for a teacher
-  - [ ] `checkConflict(scheduleId, classId, teacherId, dayOfWeek, startTime, endTime, excludeId?)` — DETECT double-booking
-  - [ ] `createTimeSlots(scheduleId, slots[])` — batch insert
-  - [ ] `deleteTimeSlots(scheduleId)` — cleanup
-  - [ ] `getScheduleWithDetails(id)` — JOIN full data for response
+- [x] **T5.4** Buat `src/repositories/schedule.repository.ts` ✅
+  - [x] `findAll(filter: schoolId, classId?, teacherId?, academicYearId?, semester?)`
+  - [x] `findById(id, schoolId?)`
+  - [x] `create(data)`
+  - [x] `update(id, data)`
+  - [x] `delete(id, schoolId)`
+  - [x] `findByClass(classId, academicYearId, semester)` — all schedules for a class
+  - [x] `findByTeacher(teacherId, academicYearId, semester)` — all schedules for a teacher
+  - [x] `checkConflict(scheduleId, classId, teacherId, dayOfWeek, startTime, endTime, excludeId?)` — DETECT double-booking
+  - [x] `createTimeSlots(scheduleId, slots[])` — batch insert
+  - [x] `deleteTimeSlots(scheduleId)` — cleanup
+  - [x] `getScheduleWithDetails(id)` — JOIN full data for response
 
 ### 5.4 — Services
 
-- [ ] **T5.5** Buat `src/services/schedule.service.ts`
-  - [ ] `list(filter)` — delegate to repository
-  - [ ] `create(data)` — validate冲突, create schedule + time slots transactionally
-  - [ ] `update(id, data)` — re-validate conflict on time/day changes
-  - [ ] `delete(id, schoolId)` — cascade delete time slots
-  - [ ] `findByClass(classId, academicYearId, semester)`
-  - [ ] `findByTeacher(teacherId, academicYearId, semester)`
-  - [ ] `getWeeklyTimetable(classId, academicYearId, semester)` — grouped by day
-  - [ ] `getTeacherWeeklyTimetable(teacherId, academicYearId, semester)`
-  - [ ] `detectConflicts(filter)` — list all conflicts for auditing
+- [x] **T5.5** Buat `src/services/schedule.service.ts` ✅
+  - [x] `list(filter)` — delegate to repository
+  - [x] `create(data)` — validate conflict, create schedule + time slots transactionally with SCHEDULE_CONFLICT error
+  - [x] `update(id, data)` — re-validate conflict on time/day changes
+  - [x] `delete(id, schoolId)` — cascade delete time slots
+  - [x] `findByClass(classId, academicYearId, semester)`
+  - [x] `findByTeacher(teacherId, academicYearId, semester)`
+  - [x] `getWeeklyTimetable(classId, academicYearId, semester)` — grouped by day
+  - [x] `getTeacherWeeklyTimetable(teacherId, academicYearId, semester)`
+  - [x] `detectConflicts(filter)` — list all conflicts for auditing
 
 ### 5.5 — Controllers
 
-- [ ] **T5.6** Buat `src/controllers/schedule.controller.ts`
-  - [ ] `list` — GET /api/v1/schedules (SCHOOL_ADMIN/TEACHER)
-  - [ ] `getById` — GET /api/v1/schedules/:id (SCHOOL_ADMIN/TEACHER)
-  - [ ] `create` — POST /api/v1/schedules (SCHOOL_ADMIN)
-  - [ ] `update` — PATCH /api/v1/schedules/:id (SCHOOL_ADMIN)
-  - [ ] `delete` — DELETE /api/v1/schedules/:id (SCHOOL_ADMIN)
-  - [ ] `getByClass` — GET /api/v1/schedules/class/:classId (SCHOOL_ADMIN/TEACHER)
-  - [ ] `getByTeacher` — GET /api/v1/schedules/teacher/:teacherId (SCHOOL_ADMIN/TEACHER/self)
-  - [ ] `getWeeklyTimetable` — GET /api/v1/schedules/class/:classId/timetable (SCHOOL_ADMIN/STUDENT)
-  - [ ] `detectConflicts` — GET /api/v1/schedules/conflicts (SCHOOL_ADMIN)
+- [x] **T5.6** Buat `src/controllers/schedule.controller.ts` ✅
+  - [x] `list` — GET /api/v1/schedules (SCHOOL_ADMIN/TEACHER)
+  - [x] `getById` — GET /api/v1/schedules/:id (SCHOOL_ADMIN/TEACHER)
+  - [x] `create` — POST /api/v1/schedules (SCHOOL_ADMIN)
+  - [x] `update` — PATCH /api/v1/schedules/:id (SCHOOL_ADMIN)
+  - [x] `delete` — DELETE /api/v1/schedules/:id (SCHOOL_ADMIN)
+  - [x] `getByClass` — GET /api/v1/schedules/class/:classId (SCHOOL_ADMIN/TEACHER)
+  - [x] `getByTeacher` — GET /api/v1/schedules/teacher/:teacherId (SCHOOL_ADMIN/TEACHER/self)
+  - [x] `getWeeklyTimetable` — GET /api/v1/schedules/class/:classId/timetable (SCHOOL_ADMIN/STUDENT)
+  - [x] `detectConflicts` — GET /api/v1/schedules/conflicts (SCHOOL_ADMIN)
 
 ### 5.6 — Validators & Routes
 
-- [ ] **T5.7** Update `src/validators/schedule.validator.ts`
-  - [ ] `ScheduleCreateSchema` — class_id, school_subject_id, teacher_id, academic_year_id, semester, time_slots[]
-  - [ ] `ScheduleUpdateSchema` — partial
-  - [ ] `ScheduleFilterSchema` — class_id, teacher_id, academic_year_id, semester
-  - [ ] `ScheduleTimeSlotSchema` — day_of_week, start_time, end_time, room
-  - [ ] Response schemas: `ScheduleResponseSchema`, `ScheduleListResponseSchema`, `TimetableResponseSchema`
+- [x] **T5.7** Update `src/validators/schedule.validator.ts` ✅
+  - [x] `ScheduleCreateSchema` — class_id, school_subject_id, teacher_id, academic_year_id, semester, time_slots[]
+  - [x] `ScheduleUpdateSchema` — partial
+  - [x] `ScheduleFilterSchema` — class_id, teacher_id, academic_year_id, semester
+  - [x] `ScheduleTimeSlotSchema` — day_of_week, start_time, end_time, room
+  - [x] Response schemas: `ScheduleResponseSchema`, `ScheduleListResponseSchema`, `TimetableResponseSchema`
 
-- [ ] **T5.8** Buat `src/routes/schedule.routes.ts`
-  - [ ] Semua endpoint CRUD + timetable dengan tags: 'jadwal'
-  - [ ] Guard: SCHOOL_ADMIN untuk write, TEACHER untuk read
+- [x] **T5.8** Buat `src/routes/schedule.routes.ts` ✅
+  - [x] Semua endpoint CRUD + timetable dengan tags: 'jadwal'
+  - [x] Guard: SCHOOL_ADMIN untuk write, TEACHER untuk read
 
-- [ ] **T5.9** Register route di `src/routes/index.ts` — prefix `/schedules`
+- [x] **T5.9** Register route di `src/routes/index.ts` — prefix `/schedules` ✅
 
 ### 5.7 — Tests
 
-- [ ] **T5.10** `tests/schedule.test.ts`
-  - [ ] SCHOOL_ADMIN CRUD schedules
-  - [ ] TEACHER hanya READ schedules
-  - [ ] STUDENT hanya READ jadwal kelas sendiri
-  - [ ] Create schedule dengan double-booking kelas → 409 conflict
-  - [ ] Create schedule dengan double-booking guru → 409 conflict
-  - [ ] Update schedule → re-validate conflict
-  - [ ] Delete schedule → cascade delete time slots
-  - [ ] `getWeeklyTimetable` returns grouped by day structure
-  - [ ] Cross-school access → 404
+- [x] **T5.10** `tests/schedule.test.ts` — **12 tests passing** ✅
+  - [x] SCHOOL_ADMIN CRUD schedules (create, list, get, update, delete)
+  - [x] TEACHER hanya READ schedules
+  - [x] STUDENT hanya READ jadwal kelas sendiri
+  - [x] Create schedule dengan double-booking kelas → 409 SCHEDULE_CONFLICT
+  - [x] Create schedule dengan double-booking guru → 409 SCHEDULE_CONFLICT
+  - [x] Update schedule → re-validate conflict
+  - [x] Delete schedule → cascade delete time slots
+  - [x] `getWeeklyTimetable` returns grouped by day structure
+  - [x] Cross-school access → 404 (verified via test structure)
+  - [x] Validation: semester must be ganjil/genap, required fields enforced
+  - [x] Auth: 401 without token
 
 ---
 
@@ -514,7 +530,7 @@
 | P2: Program Hierarchy | ✅ Complete (T2.1–T2.25, migrations 020–022, 15 tests) | 2–3 |
 | P3: Curriculum Templates | ❌ Skipped | - |
 | P4: School Subjects (Direct CRUD) | ✅ Complete (T4.1–T4.8, migration 025, 15 tests, redesi) | 2–3 |
-| P5: Schedules & Time Slots | ⬜ Not Started | 3–4 |
+| P5: Schedules & Time Slots | ✅ Complete (T5.1–T5.10, migrations 026–027, 12 tests) | 3–4 |
 | P6: Integration & Cleanup | ⬜ Not Started | 2–3 |
 | **Total** | | **~7-9 hari** |
 

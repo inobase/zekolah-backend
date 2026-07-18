@@ -62,6 +62,8 @@ export async function createTestApp() {
     'grades',
     'attendance',
     'teaching_assignments',
+    'schedule_time_slots',
+    'schedules',
     'class_students',
     'teachers',
     'students',
