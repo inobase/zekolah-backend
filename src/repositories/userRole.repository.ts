@@ -57,12 +57,14 @@ export class UserRoleRepository {
       is_active: number | boolean
     }>
 
-    // Deduplicate by role name (priority: exact > school > global)
+    // Deduplicate by (role, school_id, academic_year_id) composite key
+    // to preserve AY-scoped roles alongside school-wide and global roles
     const seen = new Set<string>()
     return rows
       .filter((row) => {
-        if (seen.has(row.role)) return false
-        seen.add(row.role)
+        const key = `${row.role}|${row.school_id}|${row.academic_year_id}`
+        if (seen.has(key)) return false
+        seen.add(key)
         return true
       })
       .map((row) => ({

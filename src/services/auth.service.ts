@@ -11,6 +11,7 @@ import { UserRepository } from '../repositories/user.repository'
 import { UserRoleRepository } from '../repositories/userRole.repository'
 import { AuthUser, AuthTokenResponse, SafeUser } from '../models/interfaces/AuthInterfaces'
 import { LoginInput, RegisterInput, RefreshInput } from '../validators/auth.validator'
+import { ResolvedUserRole } from '../models/interfaces/RoleInterfaces'
 
 export class AuthService {
   private userRepo: UserRepository
@@ -72,7 +73,18 @@ export class AuthService {
     // Phase 4: resolve roles + school/year context for JWT payload
     const userRoleRepo = new UserRoleRepository(this.knex)
     const allRoles = await userRoleRepo.findAllActiveForUser(user.id)
-    // Pick highest-priority context: prefer non-null school_id + academic_year_id
+
+    // Deterministic context selection: highest specificity first
+    // Priority: (1) exact school+AY, (2) school-wide, (3) global
+    allRoles.sort((a, b) => {
+      const score = (role: ResolvedUserRole) => {
+        const schoolScore = role.school_id != null ? 1 : 0
+        const ayScore = role.academic_year_id != null ? 1 : 0
+        return schoolScore * 2 + ayScore  // 3=exact, 2=school-wide, 1=global-null, 0=fully-global
+      }
+      return score(b) - score(a)  // highest score first
+    })
+
     let ctxSchoolId: number | null = null
     let ctxAYId: number | null = null
     for (const role of allRoles) {
