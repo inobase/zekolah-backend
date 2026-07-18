@@ -273,59 +273,91 @@
 
 ---
 
-## Phase 4 — School Adoption & School Subjects
+## Phase 4 — School Subjects (Redesigned — Direct CRUD per Sekolah, Tanpa Kurikulum Templates)
 
-> Sekolah mengaktifkan template kurikulum. Template di-copy sebagai `school_subjects` yang bisa dimodifikasi.
+> **Catatan:** Phase ini diredesign dari "Adopt Curriculum Template" menjadi "Direct School Subject Management".
+> Sekolah membuat/mengelola mata kuliah sendiri yang scoped per specialization (`school_specializations`).
+> Tidak ada kurikulum template adoption — setiap sekolah bebas membuat struktur mata kuliahnya sendiri.
+> Migration 024 (`kurikulum_template_structures`) dan migration 025 (`kurikulum_adoptions`) tidak dipakai.
+> Migration 025 yang seharusnya `kurikulum_adoptions` diganti menjadi `school_subjects`.
 
-### 4.1 — Tabel `school_subjects` (School-Scoped)
+### 4.1 — Tabel `school_subjects` (School-Scoped) ✅ COMPLETE
 
-- [ ] **T4.1** Buat migration `024_create_school_subjects.ts`
-  - [ ] Kolom: `id`, `school_id` (FK → schools), `template_structure_id` (FK → kurikulum_template_structures), `name` (VARCHAR 200), `code` (VARCHAR 50), `subject_type` ENUM('UMUM','DD','DP','SP'), `jp_per_minggu` (INT), `jp_per_semester` (INT), `theory_hours` (INT), `practice_hours` (INT), `customizable` BOOLEAN DEFAULT TRUE, `created_at`, `updated_at`
-  - [ ] Index: `(school_id, name)`, `(school_id, code)`, `(template_structure_id)`
-  - [ ] Catatan: `name`, `code`, `jp_per_minggu` bisa di-overwrite sekolah (customizable = TRUE)
-  - [ ] Down: DROP TABLE `school_subjects`
+- [x] **T4.1** Buat migration `025_create_school_subjects.ts` ✅
+  - [x] Kolom: `id`, `school_id` (FK → schools), `specialization_id` (FK → school_specializations), `name` (VARCHAR 200), `code` (VARCHAR 50), `subject_type` ENUM('UMUM','DD','DP','SP'), `jp_per_minggu` (INT), `jp_per_semester` (INT), `theory_hours` (INT), `practice_hours` (INT), `customizable` BOOLEAN DEFAULT TRUE, `created_at`, `updated_at`
+  - [x] Index: `(school_id, name)`, `(school_id, code)`, `(school_id, specialization_id)`
+  - [x] Catatan: `name`, `code`, `jp_per_minggu` bisa di-overwrite sekolah (customizable = TRUE)
+  - [x] Auto-calculate `jp_per_semester = jp_per_minggu * 18` saat create/update
+  - [x] Down: DROP TABLE `school_subjects`
+  - [x] **Migration applied** via `npm run migrate`
 
-- [ ] **T4.2** Buat migration `025_create_kurikulum_adoptions.ts`
-  - [ ] Kolom: `id`, `school_id` (FK → schools), `template_id` (FK → kurikulum_templates), `program_id` (FK → programs), `specialization_id` (FK → specializations, nullable), `academic_year_id` (FK → academic_years), `status` ENUM('pending','active','archived'), `adopted_at`, `adopted_by` (FK → users), timestamps
-  - [ ] Unique: `(school_id, template_id, academic_year_id)` — satu sekolah satu template per TA
-  - [ ] Down: DROP TABLE `kurikulum_adoptions`
+### 4.2 — Models & Interfaces ✅ COMPLETE
 
-### 4.2 — Service: Adoption Flow
+- [x] **T4.2** Buat `src/models/interfaces/SchoolSubjectInterfaces.ts` ✅
+  - [x] Interface `SchoolSubject`: all columns + `specialization` (joined)
+  - [x] Interface `SchoolSubjectCreateInput`: tanpa `id`, `created_at`, `updated_at`
+  - [x] Interface `SchoolSubjectUpdateInput`: partial fields
+  - [x] Type `SchoolSubjectType`: 'UMUM' | 'DD' | 'DP' | 'SP'
 
-- [ ] **T4.3** Update `src/services/kurikulum.service.ts`
-  - [ ] `adoptTemplate(schoolId, templateId, academicYearId, userId)` — langkah utama:
-    1. Validasi: sekolah punya program_id yang match dengan template
-    2. Cek belum ada adopsi untuk template + academic_year yang sama
-    3. INSERT ke `kurikulum_adoptions` (status: 'pending')
-    4. SELECT all `kurikulum_template_structures` dari template
-    5. INSERT ke `school_subjects` — one row per structure, copy `name`, `code`, `jp_per_minggu` dll
-    6. UPDATE adopsi status → 'active'
-  - [ ] `getAdoptions(schoolId)` — list all template adoptions for school
-  - [ ] `getSchoolSubjects(schoolId, academicYearId?)` — list school_subjects dengan join adoptions
-  - [ ] `updateSchoolSubject(schoolSubjectId, schoolId, data)` — update customizable fields
-  - [ ] `cloneStructureToSchool(templateStructureId, schoolId, adoptionId)` — single item clone
+### 4.3 — Repository ✅ COMPLETE
 
-### 4.3 — Controllers & Routes: Adoption
+- [x] **T4.3** Buat `src/repositories/schoolSubject.repository.ts` ✅
+  - [x] `findAll(schoolId, filter?)` — list subjects dengan filter specialization_id, search
+  - [x] `findById(id, schoolId?)` — single subject
+  - [x] `create(data)` — insert subject, auto-calculate `jp_per_semester`
+  - [x] `update(id, schoolId, data)` — update subject, recalculate `jp_per_semester` if `jp_per_minggu` changes
+  - [x] `delete(id, schoolId)` — hard delete
+  - [x] `findBySchoolAndSpecialization(schoolId, specializationId)` — list by specialization
+  - [x] `count(schoolId, filter?)` — helper for pagination
 
-- [ ] **T4.4** Update `src/controllers/kurikulum.controller.ts`
-  - [ ] `adoptTemplate` — POST /api/v1/kurikulum/schools/:schoolId/adopt/:templateId (SCHOOL_ADMIN)
-  - [ ] `getAdoptions` — GET /api/v1/kurikulum/schools/:schoolId/adoptions (SCHOOL_ADMIN)
-  - [ ] `getSchoolSubjects` — GET /api/v1/kurikulum/schools/:schoolId/subjects (SCHOOL_ADMIN)
-  - [ ] `updateSchoolSubject` — PATCH /api/v1/kurikulum/schools/:schoolId/subjects/:subjectId (SCHOOL_ADMIN)
+### 4.4 — Service ✅ COMPLETE
 
-- [ ] **T4.5** Update `src/validators/kurikulum.validator.ts`
-  - [ ] `AdoptionCreateSchema` — template_id, academic_year_id
-  - [ ] `SchoolSubjectUpdateSchema` ��� name, code, jp_per_minggu, theory_hours, practice_hours
+- [x] **T4.4** Buat `src/services/schoolSubject.service.ts` ✅
+  - [x] `list(schoolId, filter)` — validate school access, delegate to repository
+  - [x] `getById(id, schoolId)` — validate existence + school ownership
+  - [x] `create(schoolId, data, userId)` — validate school ownership, calculate jp_per_semester
+  - [x] `update(id, schoolId, data)` — validate ownership, recalculate jp_per_semester
+  - [x] `delete(id, schoolId)` — validate ownership
+  - [x] `listBySpecialization(schoolId, specializationId)` — filtered by specialization
 
-### 4.4 — Tests
+### 4.5 — Controller & Routes ✅ COMPLETE
 
-- [ ] **T4.6** `tests/kurikulum-adoption.test.ts`
-  - [ ] Sekolah adopt template → school_subjects di-create otomatis
-  - [ ] Adopsi berulang dengan template + TA yang sama → 409 conflict
-  - [ ] Sekolah tanpa program yang match → 400 error
-  - [ ] Update school_subjects name/code → berhasil, template structure tidak berubah
-  - [ ] SCHOOL_ADMIN ≠ sekolah yang di-adopt → 403
-  - [ ] Non-admin access → 403
+- [x] **T4.5** Buat `src/controllers/schoolSubject.controller.ts` ✅
+  - [x] `list` — GET /api/v1/schools/:schoolId/subjects (SCHOOL_ADMIN)
+  - [x] `getById` — GET /api/v1/schools/:schoolId/subjects/:id (SCHOOL_ADMIN)
+  - [x] `create` — POST /api/v1/schools/:schoolId/subjects (SCHOOL_ADMIN)
+  - [x] `update` — PATCH /api/v1/schools/:schoolId/subjects/:id (SCHOOL_ADMIN)
+  - [x] `delete` — DELETE /api/v1/schools/:schoolId/subjects/:id (SCHOOL_ADMIN)
+  - [x] `listBySpecialization` — GET /api/v1/schools/:schoolId/specializations/:specId/subjects (SCHOOL_ADMIN)
+
+- [x] **T4.6** Buat `src/routes/schoolSubject.routes.ts` ✅
+  - [x] Semua endpoint dengan tags: 'jurusan', summary, security
+  - [x] Guard: SCHOOL_ADMIN scope (only admin of that school)
+  - [x] Pagination: page/limit query params for GET list
+  - [x] Response schemas with Zod validation
+
+- [x] **T4.7** Register route di `src/routes/index.ts` ✅
+  - [x] Import: `import schoolSubjectRoutes from './schoolSubject.routes'`
+  - [x] Register: `fastify.register(schoolSubjectRoutes, { prefix: '/schools' })`
+
+### 4.8 — Tests ✅ COMPLETE
+
+- [x] **T4.8** `tests/schoolSubject.test.ts` — **15 tests passing ✅**
+  - [x] POST creates school subject with all fields (201)
+  - [x] POST auto-calculates `jp_per_semester = jp_per_minggu * 18`
+  - [x] POST returns 400 if `jp_per_minggu` <= 0
+  - [x] POST returns 400 if `subject_type` is invalid
+  - [x] POST requires authentication (401)
+  - [x] GET lists school subjects with pagination
+  - [x] GET filters by `specialization_id`
+  - [x] GET by ID returns subject
+  - [x] GET by ID returns 404 for non-existent subject
+  - [x] PATCH updates school subject
+  - [x] PATCH updates `jp_per_semester` when `jp_per_minggu` changes
+  - [x] DELETE deletes school subject
+  - [x] GET /schools/:schoolId/specializations/:specId/subjects returns subjects
+  - [x] Cross-school: School B cannot see School A subjects
+  - [x] GET lists without auth returns 401
 
 ---
 
@@ -481,10 +513,10 @@
 | P1: `education_level` di `schools` | ✅ Complete (8/8 tasks) | 1-2 |
 | P2: Program Hierarchy | ✅ Complete (T2.1–T2.25, migrations 020–022, 15 tests) | 2–3 |
 | P3: Curriculum Templates | ❌ Skipped | - |
-| P4: School Adoption & School Subjects | ⬜ Not Started | 2-3 |
-| P5: Schedules & Time Slots | ⬜ Not Started | 3-4 |
-| P6: Integration & Cleanup | ⬜ Not Started | 2-3 |
-| **Total** | | **~9-12 hari** |
+| P4: School Subjects (Direct CRUD) | ✅ Complete (T4.1–T4.8, migration 025, 15 tests, redesi) | 2–3 |
+| P5: Schedules & Time Slots | ⬜ Not Started | 3–4 |
+| P6: Integration & Cleanup | ⬜ Not Started | 2–3 |
+| **Total** | | **~7-9 hari** |
 
 ---
 
@@ -492,8 +524,10 @@
 
 **Last Updated: 2026-07-19**
 - ✅ Phase 2 (Program Hierarchy) — FULLY COMPLETE (T2.1 through T2.25)
-- ✅ Migration `019` (programs + seeds), `020` (specializations + seeds), `021` (school_programs), `022` (school_specializations) — all applied
-- ✅ `tests/school-program.test.ts` — 15 tests passing (activation, deactivation, specialization management, cross-school isolation, cascade, access control)
+- ✅ Phase 4 (School Subjects — Redesigned) — FULLY COMPLETE (T4.1 through T4.8)
+  - ✅ Migration `025` (school_subjects + seeds) applied
+  - ✅ `tests/schoolSubject.test.ts` — 15 tests passing (CRUD, validation, cross-school isolation, auth, pagination)
+  - ✅ Redesign: direct CRUD per school specialization (no curriculum template adoption)
 - ✅ TypeScript compilation: 0 errors
 - ✅ `tests/helper.ts` updated with new tables in truncate list
 - ❌ Phase 3 (Curriculum Templates) — **SKIPPED** by decision

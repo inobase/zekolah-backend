@@ -73,7 +73,7 @@ export const ProgramResponseSchema = z.object({
   name: z.string(),
   description: z.string().nullable().optional(),
   education_level: z.string() as z.ZodType<EducationLevel>,
-  is_active: z.boolean(),
+  is_active: z.coerce.boolean(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
 })
@@ -118,7 +118,7 @@ export const SpecializationResponseSchema = z.object({
   code: z.string(),
   name: z.string(),
   description: z.string().nullable().optional(),
-  is_active: z.boolean(),
+  is_active: z.coerce.boolean(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
 })

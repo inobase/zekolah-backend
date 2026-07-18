@@ -56,7 +56,7 @@ export const UserRoleWithDetailsSchema = z.object({
   role_id: z.number(),
   school_id: z.number().nullable(),
   academic_year_id: z.number().nullable(),
-  is_active: z.boolean(),
+  is_active: z.coerce.boolean(),
   granted_at: z.any().nullable(),
   granted_by: z.number().nullable(),
   created_at: z.any(),

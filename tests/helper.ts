@@ -68,6 +68,7 @@ export async function createTestApp() {
     'classes',
     'class_subjects',
     'subjects',
+    'school_subjects',
     'school_specializations',
     'school_programs',
     'academic_years',
