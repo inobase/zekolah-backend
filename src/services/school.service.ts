@@ -19,15 +19,22 @@ export class SchoolService {
     this.repo = new SchoolRepository(knex)
   }
 
-  async list(filter: SchoolFilterInput): Promise<{
+  async list(
+    filter: SchoolFilterInput,
+    allowedSchoolIds?: number[] | null
+  ): Promise<{
     data: School[]
     pagination: { page: number; limit: number; total: number }
   }> {
     const { page, limit, search, status } = filter
     const offset = (page - 1) * limit
+    // Apply school_id restriction only when an explicit list is provided.
+    // undefined = no restriction (admin / super_admin); [] = no schools accessible.
+    const ids =
+      allowedSchoolIds === undefined ? undefined : allowedSchoolIds ?? []
     const [data, total] = await Promise.all([
-      this.repo.findAll({ search, status, limit, offset }),
-      this.repo.count({ search, status }),
+      this.repo.findAll({ search, status, limit, offset, ids }),
+      this.repo.count({ search, status, ids }),
     ])
     return { data, pagination: { page, limit, total } }
   }

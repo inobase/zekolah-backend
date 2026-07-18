@@ -13,8 +13,12 @@ export class SchoolRepository {
     status?: string
     limit: number
     offset: number
+    ids?: number[]
   }): Promise<School[]> {
     const q = this.knex('schools').select('*')
+    if (filter.ids) {
+      q.whereIn('id', filter.ids)
+    }
     if (filter.search) {
       q.where((qb) => {
         qb.whereLike('name', `%${filter.search}%`)
@@ -27,8 +31,11 @@ export class SchoolRepository {
     return q
   }
 
-  async count(filter: { search?: string; status?: string }): Promise<number> {
+  async count(filter: { search?: string; status?: string; ids?: number[] }): Promise<number> {
     const q = this.knex('schools').count<{ count: string }[]>('* as count').first()
+    if (filter.ids) {
+      q.whereIn('id', filter.ids)
+    }
     if (filter.search) {
       q.where((qb: any) => {
         qb.whereLike('name', `%${filter.search}%`)
