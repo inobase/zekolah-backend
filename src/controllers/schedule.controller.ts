@@ -22,6 +22,7 @@ export class ScheduleController {
     const result = await this.service.list({
       page: Number(page) || 1,
       limit: Number(limit) || 50,
+      school_id: req.activeSchoolId || undefined,
       class_id: class_id ? Number(class_id) : undefined,
       teacher_id: teacher_id ? Number(teacher_id) : undefined,
       school_subject_id: school_subject_id ? Number(school_subject_id) : undefined,
@@ -34,7 +35,10 @@ export class ScheduleController {
 
   getById = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
-    const schedule = await this.service.getById(id)
+    const schedule = await this.service.getById(id, req.activeSchoolId || undefined)
+    if (req.activeSchoolId) {
+      // Already filtered by school_id in service, verify
+    }
     return reply.send(schedule)
   }
 
@@ -47,13 +51,13 @@ export class ScheduleController {
   update = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
     const body = req.body as any
-    const schedule = await this.service.update(id, body)
+    const schedule = await this.service.update(id, body, req.activeSchoolId || undefined)
     return reply.send(schedule)
   }
 
   delete = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: number }
-    await this.service.delete(id)
+    await this.service.delete(id, req.activeSchoolId || undefined)
     return reply.code(204).send({ message: 'Schedule deleted' })
   }
 

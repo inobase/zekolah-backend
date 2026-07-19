@@ -19,6 +19,9 @@ export class SchoolSubjectController {
 
   list = async (req: FastifyRequest, reply: FastifyReply) => {
     const { schoolId } = req.params as { schoolId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot access subjects from another school' })
+    }
     const {
       page = 1,
       limit = 50,
@@ -38,27 +41,40 @@ export class SchoolSubjectController {
   }
 
   getById = async (req: FastifyRequest, reply: FastifyReply) => {
-    const { id } = req.params as { id: string }
-    const subject = await this.service.getById(Number(id))
+    const { id, schoolId } = req.params as { id: string; schoolId: number }
+    // Enforce school context matches URL param
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot access subjects from another school' })
+    }
+    const subject = await this.service.getById(Number(id), schoolId)
     return reply.send(subject)
   }
 
   create = async (req: FastifyRequest, reply: FastifyReply) => {
     const { schoolId } = req.params as { schoolId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot create subjects for another school' })
+    }
     const body = req.body as any
     const subject = await this.service.create({ ...body, school_id: schoolId })
     return reply.status(201).send(subject)
   }
 
   update = async (req: FastifyRequest, reply: FastifyReply) => {
-    const { id } = req.params as { id: string }
+    const { id, schoolId } = req.params as { id: string; schoolId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot update subjects from another school' })
+    }
     const body = req.body as any
-    const subject = await this.service.update(Number(id), body)
+    const subject = await this.service.update(Number(id), body, schoolId)
     return reply.send(subject)
   }
 
   delete = async (req: FastifyRequest, reply: FastifyReply) => {
     const { schoolId } = req.params as { schoolId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot delete subjects from another school' })
+    }
     const { id } = req.params as { id: string }
     await this.service.delete(Number(id), schoolId)
     return reply.code(204).send({ message: 'School subject deleted' })
@@ -67,6 +83,9 @@ export class SchoolSubjectController {
   // List subjects for a specific school specialization
   listBySpecialization = async (req: FastifyRequest, reply: FastifyReply) => {
     const { schoolId, specId } = req.params as { schoolId: number; specId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot access subjects from another school' })
+    }
     const subjects = await this.service.findBySpecialization(schoolId, specId)
     return reply.send({ data: subjects })
   }

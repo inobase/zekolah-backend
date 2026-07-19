@@ -833,6 +833,30 @@ describe('Schedules', () => {
     });
     expect(bRes.statusCode).toBe(201);
   });
-});
+  // Helper for creating extra teachers
+  async function createTeacherForSchool(schoolId: number, suffix: string) {
+    const teacherEmail = `teacher_${suffix}_${schoolId}@zet.com`;
+    await knex('users').where('email', teacherEmail).del();
+    await knex('user_roles').where('user_id', knex.raw('(SELECT id FROM users WHERE email = ?)', [teacherEmail])).del();
+    await knex('teachers').whereRaw('user_id = (SELECT id FROM users WHERE email = ?)', [teacherEmail]).del();
 
-// Helper for creating extra teachers
+    const tHash = await bcrypt.hash('Password123', 10);
+    let [tUid]: any = await knex('users').insert({
+      email: teacherEmail,
+      password: tHash,
+      name: `Teacher ${suffix}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+    tUid = tUid as number;
+
+    const [tId] = await knex('teachers').insert({
+      user_id: tUid,
+      school_id: schoolId,
+      specialization: 'Teknik',
+      phone: '08123456789',
+    });
+
+    return { teacherEmail, tUid, teacherId: tId as number };
+  }
+});

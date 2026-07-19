@@ -20,15 +20,19 @@ import {
 export class ScheduleRepository {
   constructor(private knex: Knex) {}
 
-  async findAll(filter: Partial<ScheduleFilterInput & { limit?: number; offset?: number }>): Promise<Schedule[]> {
+  async findAll(filter: Partial<ScheduleFilterInput & { limit?: number; offset?: number; school_id?: number }>) {
     const q = this.knex<Schedule>('schedules').select('*')
-    if (filter.class_id) q.where('class_id', filter.class_id)
-    if (filter.teacher_id) q.where('teacher_id', filter.teacher_id)
-    if (filter.school_subject_id) q.where('school_subject_id', filter.school_subject_id)
-    if (filter.academic_year_id) q.where('academic_year_id', filter.academic_year_id)
-    if (filter.semester) q.where('semester', filter.semester)
-    if (filter.status) q.where('status', filter.status)
-    q.orderBy('id', 'desc')
+    if (filter.class_id) q.where('schedules.class_id', filter.class_id)
+    if (filter.teacher_id) q.where('schedules.teacher_id', filter.teacher_id)
+    if (filter.school_subject_id) q.where('schedules.school_subject_id', filter.school_subject_id)
+    if (filter.academic_year_id) q.where('schedules.academic_year_id', filter.academic_year_id)
+    if (filter.semester) q.where('schedules.semester', filter.semester)
+    if (filter.status) q.where('schedules.status', filter.status)
+    if (filter.school_id) {
+      q.join('classes', 'schedules.class_id', '=', 'classes.id')
+        .where('classes.school_id', filter.school_id)
+    }
+    q.orderBy('schedules.id', 'desc')
     if (filter.limit) q.limit(filter.limit)
     if (filter.offset) q.offset(filter.offset)
     return q
@@ -36,6 +40,14 @@ export class ScheduleRepository {
 
   async findById(id: number): Promise<Schedule | null> {
     return (await this.knex<Schedule>('schedules').where({ id }).first()) ?? null
+  }
+
+  async findByIdWithSchool(id: number, schoolId: number): Promise<Schedule | null> {
+    return (await this.knex<Schedule>('schedules')
+      .join('classes', 'schedules.class_id', '=', 'classes.id')
+      .where('schedules.id', id)
+      .andWhere('classes.school_id', schoolId)
+      .first()) ?? null
   }
 
   async create(data: ScheduleCreateInput): Promise<number> {
@@ -152,6 +164,33 @@ export class ScheduleRepository {
         'schools.name as school_name'
       )
       .where('schedules.id', id)
+      .first()) ?? null
+  }
+
+  /** Get schedule with full joined details, scoped to a specific school */
+  async getScheduleWithDetailsBySchool(id: number, schoolId: number): Promise<ScheduleWithDetails | null> {
+    return (await this.knex<ScheduleWithDetails>('schedules')
+      .join('classes', 'schedules.class_id', '=', 'classes.id')
+      .join('school_subjects', 'schedules.school_subject_id', '=', 'school_subjects.id')
+      .join('teachers', 'schedules.teacher_id', '=', 'teachers.id')
+      .join('academic_years', 'schedules.academic_year_id', '=', 'academic_years.id')
+      .join('schools', 'academic_years.school_id', '=', 'schools.id')
+      .select(
+        'schedules.*',
+        'classes.name as class_name',
+        'classes.grade as class_grade',
+        'school_subjects.name as school_subject_name',
+        'school_subjects.code as school_subject_code',
+        'teachers.specialization as teacher_specialization',
+        'teachers.phone as teacher_phone',
+        'academic_years.year as academic_year_year',
+        'academic_years.semester as academic_year_semester',
+        'academic_years.start_date as academic_year_start_date',
+        'academic_years.end_date as academic_year_end_date',
+        'schools.name as school_name'
+      )
+      .where('schedules.id', id)
+      .andWhere('classes.school_id', schoolId)
       .first()) ?? null
   }
 

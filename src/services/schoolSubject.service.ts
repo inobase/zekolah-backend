@@ -44,8 +44,8 @@ export class SchoolSubjectService {
     return { data, pagination: { page, limit, total } }
   }
 
-  async getById(id: number): Promise<SchoolSubject> {
-    const subject = await this.repo.findById(id)
+  async getById(id: number, schoolId?: number): Promise<SchoolSubject> {
+    const subject = await this.repo.findByIdWithSchool(id, schoolId!)
     if (!subject) throw new AppError('NOT_FOUND', 'School subject not found')
     return subject
   }
@@ -68,11 +68,11 @@ export class SchoolSubjectService {
       customizable: data.customizable ?? true,
     }
     const id = await this.repo.create(subjectData)
-    return this.repo.findById(id) as Promise<SchoolSubject>
+    return this.repo.findByIdWithSchool(id, data.school_id) as Promise<SchoolSubject>
   }
 
-  async update(id: number, data: Partial<SchoolSubjectUpdateInput>): Promise<SchoolSubject> {
-    const existing = await this.repo.findById(id)
+  async update(id: number, data: Partial<SchoolSubjectUpdateInput>, schoolId?: number): Promise<SchoolSubject> {
+    const existing = await this.repo.findByIdWithSchool(id, schoolId!)
     if (!existing) throw new AppError('NOT_FOUND', 'School subject not found')
     if (data.subject_type && !SUBJECT_TYPES.includes(data.subject_type)) {
       throw new AppError('VALIDATION_ERROR', 'subject_type must be one of: UMUM, DD, DP, SP')
@@ -85,11 +85,11 @@ export class SchoolSubjectService {
       data.jp_per_semester = (data.jp_per_semester ?? data.jp_per_minggu * 18)
     }
     await this.repo.update(id, data)
-    return this.repo.findById(id) as Promise<SchoolSubject>
+    return this.repo.findByIdWithSchool(id, schoolId!) as Promise<SchoolSubject>
   }
 
   async delete(id: number, schoolId: number): Promise<void> {
-    const existing = await this.repo.findById(id)
+    const existing = await this.repo.findByIdWithSchool(id, schoolId)
     if (!existing) throw new AppError('NOT_FOUND', 'School subject not found')
     if (existing.school_id !== schoolId) {
       throw new AppError('FORBIDDEN', 'Cannot delete subject from another school')

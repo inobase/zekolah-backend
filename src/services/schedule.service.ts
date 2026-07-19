@@ -44,12 +44,14 @@ export class ScheduleService {
     if (filter.academic_year_id) whereFilter.academic_year_id = filter.academic_year_id
     if (filter.semester) whereFilter.semester = filter.semester
     if (filter.status) whereFilter.status = filter.status
+    if (filter.school_id) whereFilter.school_id = filter.school_id
     
     const [data, countRow] = await Promise.all([
       this.repo.findAll({ ...whereFilter, limit, offset }),
       this.knex<Schedule>('schedules')
-        .count('* as count')
+        .join('classes', 'schedules.class_id', '=', 'classes.id')
         .where(whereFilter as any)
+        .count('* as count')
         .first(),
     ])
     const total = Number((countRow as any)?.count ?? 0)
@@ -58,8 +60,13 @@ export class ScheduleService {
 
   // ---------- get by id ----------
 
-  async getById(id: number): Promise<ScheduleWithDetails> {
-    const schedule = await this.repo.getScheduleWithDetails(id)
+  async getById(id: number, schoolId?: number): Promise<ScheduleWithDetails> {
+    let schedule
+    if (schoolId) {
+      schedule = await this.repo.getScheduleWithDetailsBySchool(id, schoolId)
+    } else {
+      schedule = await this.repo.getScheduleWithDetails(id)
+    }
     if (!schedule) throw new AppError('NOT_FOUND', 'Schedule not found')
     return schedule
   }
@@ -128,8 +135,10 @@ export class ScheduleService {
 
   // ---------- update ----------
 
-  async update(id: number, data: Partial<ScheduleUpdateInput>): Promise<ScheduleWithDetails> {
-    const existing = await this.repo.findById(id)
+  async update(id: number, data: Partial<ScheduleUpdateInput>, schoolId?: number): Promise<ScheduleWithDetails> {
+    const existing = schoolId
+      ? await this.repo.findByIdWithSchool(id, schoolId)
+      : await this.repo.findById(id)
     if (!existing) throw new AppError('NOT_FOUND', 'Schedule not found')
 
     if (data.semester && !VALID_SEMESTERS.includes(data.semester)) {
@@ -185,8 +194,10 @@ export class ScheduleService {
 
   // ---------- delete ----------
 
-  async delete(id: number): Promise<void> {
-    const existing = await this.repo.findById(id)
+  async delete(id: number, schoolId?: number): Promise<void> {
+    const existing = schoolId
+      ? await this.repo.findByIdWithSchool(id, schoolId)
+      : await this.repo.findById(id)
     if (!existing) throw new AppError('NOT_FOUND', 'Schedule not found')
     await this.repo.deleteTimeSlots(id)
     await this.repo.delete(id)

@@ -1,5 +1,7 @@
 // =====================================================
 // Subject Repository
+// DEPRECATED for SMK (education_level='3B'): use school_subjects instead.
+// Legacy subjects table still works for SMA/jenjang lain (education_level != '3B').
 // =====================================================
 
 import { Knex } from 'knex'

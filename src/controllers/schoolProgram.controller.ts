@@ -19,6 +19,9 @@ export class SchoolProgramController {
 
   list = async (req: FastifyRequest, reply: FastifyReply) => {
     const schoolId = req.params as { schoolId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId.schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot access programs from another school' })
+    }
     const programs = await this.service.list(schoolId.schoolId)
     // Strip joined `program` object for clean response
     const clean = programs.map((p: any) => ({
@@ -36,6 +39,9 @@ export class SchoolProgramController {
 
   getAvailable = async (req: FastifyRequest, reply: FastifyReply) => {
     const schoolId = req.params as { schoolId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId.schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot access programs from another school' })
+    }
     const available = await this.service.getAvailable(schoolId.schoolId)
     // Map to clean shape
     const clean = (available as any[]).map((p: any) => ({
@@ -53,6 +59,9 @@ export class SchoolProgramController {
 
   activate = async (req: FastifyRequest, reply: FastifyReply) => {
     const schoolId = req.params as { schoolId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== schoolId.schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot activate programs for another school' })
+    }
     const programId = req.body as { program_id: number }
     const userId = (req.user as any)?.id
     const result = await this.service.activate(schoolId.schoolId, programId.program_id, userId)
@@ -72,6 +81,9 @@ export class SchoolProgramController {
 
   deactivate = async (req: FastifyRequest, reply: FastifyReply) => {
     const params = req.params as { schoolId: number; programId: number }
+    if (req.activeSchoolId && req.activeSchoolId !== params.schoolId) {
+      return reply.code(403).send({ error: 'FORBIDDEN', message: 'Cannot deactivate programs from another school' })
+    }
     await this.service.deactivate(params.programId, params.schoolId)
     return reply.code(204).send({ message: 'School program deactivated' })
   }

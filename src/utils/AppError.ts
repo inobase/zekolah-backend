@@ -71,6 +71,8 @@ export class AppError extends Error {
       case 'USER_HAS_DEPENDENTS':
       case 'SCHOOL_HAS_DEPENDENTS':
         return 409;
+      case 'SCHEDULE_CONFLICT':
+        return 409;
       case 'BUSINESS_RULE_VIOLATION':
         return 422;
       case 'INTERNAL_ERROR':

@@ -33,7 +33,7 @@ export const subjectRoutes = async (app: FastifyZodInstance): Promise<void> => {
         tags: ['subjects'],
         summary: 'List all subjects',
         description:
-          'Returns paginated list of subjects. Filters by `search` and `school_id`.',
+          '⚠️ DEPRECATED for SMK (education_level="3B"): use /schools/:schoolId/subjects (school_subjects) instead. Legacy subjects table remains functional for SMA/jenjang lain.',
         security: [{ bearerAuth: [] }],
         headers: ContextHeadersSchema,
         querystring: SubjectFilterSchema,

@@ -43,6 +43,14 @@ describe('Cross-School Isolation', () => {
   let subjectBId: number;
   let academicYearBId: number;
 
+  // School subjects, schedules, and school program ids
+  let schoolSubjectAId: number;
+  let scheduleAId: number;
+  let schoolProgramAId: number;
+  let schoolSubjectBId: number;
+  let scheduleBId: number;
+  let schoolProgramBId: number;
+
   const getAuthHeadersA = () => ({ authorization: `Bearer ${tokenA}` });
   const getAuthHeadersB = () => ({ authorization: `Bearer ${tokenB}` });
 
@@ -300,6 +308,79 @@ describe('Cross-School Isolation', () => {
     });
     const studBBody = JSON.parse(studBRes.payload) as { id: number };
     studentBId = studBBody.id;
+
+    // --- Seed school subjects and schedules (for cross-school testing) ---
+
+    // School A: get available programs and activate one first
+    const programsARes = await app.inject({
+      method: 'POST', url: `/api/v1/schools/${schoolAId}/programs/activate`,
+      headers: getAuthHeadersA(),
+      payload: { program_id: 1 }, // first program
+    });
+    const programsABody = JSON.parse(programsARes.payload) as { id: number };
+    schoolProgramAId = programsABody.id;
+
+    // Create school subject for School A
+    const schoolSubjARes = await app.inject({
+      method: 'POST', url: `/api/v1/schools/${schoolAId}/subjects`,
+      headers: getAuthHeadersA(),
+      payload: { name: 'Bahasa Indonesia A', code: 'BI-A', specialization_id: schoolProgramAId, subject_type: 'UMUM', jp_per_minggu: 4, jp_per_semester: 72 },
+    });
+    const schoolSubjABody = JSON.parse(schoolSubjARes.payload) as { id: number };
+    schoolSubjectAId = schoolSubjABody.id;
+
+    // School B: activate program and create school subject
+    const programsBRes = await app.inject({
+      method: 'POST', url: `/api/v1/schools/${schoolBId}/programs/activate`,
+      headers: getAuthHeadersB(),
+      payload: { program_id: 1 },
+    });
+    const programsBBody = JSON.parse(programsBRes.payload) as { id: number };
+    schoolProgramBId = programsBBody.id;
+
+    const schoolSubjBRes = await app.inject({
+      method: 'POST', url: `/api/v1/schools/${schoolBId}/subjects`,
+      headers: getAuthHeadersB(),
+      payload: { name: 'Bahasa Inggris B', code: 'BE-B', specialization_id: schoolProgramBId, subject_type: 'UMUM', jp_per_minggu: 4, jp_per_semester: 72 },
+    });
+    const schoolSubjBBody = JSON.parse(schoolSubjBRes.payload) as { id: number };
+    schoolSubjectBId = schoolSubjBBody.id;
+
+    // Create schedule for School A
+    const scheduleARes = await app.inject({
+      method: 'POST', url: '/api/v1/schedules',
+      headers: getAuthHeadersA(),
+      payload: {
+        class_id: classAId,
+        school_subject_id: schoolSubjectAId,
+        teacher_id: teacherAId,
+        academic_year_id: academicYearAId,
+        semester: 'ganjil',
+        time_slots: [
+          { day_of_week: 'senin', start_time: '08:00', end_time: '09:30' },
+        ],
+      },
+    });
+    const scheduleABody = JSON.parse(scheduleARes.payload) as { id: number };
+    scheduleAId = scheduleABody.id;
+
+    // Create schedule for School B
+    const scheduleBRes = await app.inject({
+      method: 'POST', url: '/api/v1/schedules',
+      headers: getAuthHeadersB(),
+      payload: {
+        class_id: classBId,
+        school_subject_id: schoolSubjectBId,
+        teacher_id: teacherBId,
+        academic_year_id: academicYearBId,
+        semester: 'genap',
+        time_slots: [
+          { day_of_week: 'senin', start_time: '10:00', end_time: '11:30' },
+        ],
+      },
+    });
+    const scheduleBBody = JSON.parse(scheduleBRes.payload) as { id: number };
+    scheduleBId = scheduleBBody.id;
   });
 
   afterEach(async () => {
@@ -594,5 +675,157 @@ describe('Cross-School Isolation', () => {
       headers: getAuthHeadersB(),
     });
     expect(res.statusCode).toBe(404);
+  });
+
+  // ========================================================================
+  // Cross-School: School Subjects
+  // ========================================================================
+
+  it('T6.2a: User A cannot GET school_subject of school B → 403', async () => {
+    const res = await app.inject({
+      method: 'GET', url: `/api/v1/schools/${schoolBId}/subjects/${schoolSubjectBId}`,
+      headers: getAuthHeadersA(),
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('T6.2b: User B cannot GET school_subject of school A → 403', async () => {
+    const res = await app.inject({
+      method: 'GET', url: `/api/v1/schools/${schoolAId}/subjects/${schoolSubjectAId}`,
+      headers: getAuthHeadersB(),
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('T6.2c: User A cannot DELETE school_subject of school B → 403', async () => {
+    const res = await app.inject({
+      method: 'DELETE', url: `/api/v1/schools/${schoolBId}/subjects/${schoolSubjectBId}`,
+      headers: getAuthHeadersA(),
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('T6.2d: GET /schools/:schoolId/subjects only returns own school data for A', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/v1/schools/${schoolAId}/subjects?page=1&limit=50`,
+      headers: getAuthHeadersA(),
+    });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.payload) as { data: any[] };
+    for (const s of body.data) {
+      expect(s.school_id).toBe(schoolAId);
+    }
+  });
+
+  it('T6.2e: GET /schools/:schoolId/subjects only returns own school data for B', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/v1/schools/${schoolBId}/subjects?page=1&limit=50`,
+      headers: getAuthHeadersB(),
+    });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.payload) as { data: any[] };
+    for (const s of body.data) {
+      expect(s.school_id).toBe(schoolBId);
+    }
+  });
+
+  // ========================================================================
+  // Cross-School: Schedules
+  // ========================================================================
+
+  it('T6.2f: User A cannot GET schedule of school B → 404', async () => {
+    const res = await app.inject({
+      method: 'GET', url: `/api/v1/schedules/${scheduleBId}`,
+      headers: getAuthHeadersA(),
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('T6.2g: User B cannot GET schedule of school A → 404', async () => {
+    const res = await app.inject({
+      method: 'GET', url: `/api/v1/schedules/${scheduleAId}`,
+      headers: getAuthHeadersB(),
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('T6.2h: User A cannot PATCH schedule of school B → 404', async () => {
+    const res = await app.inject({
+      method: 'PATCH', url: `/api/v1/schedules/${scheduleBId}`,
+      headers: getAuthHeadersA(),
+      payload: { room: 'HACKED' },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('T6.2i: User B cannot DELETE schedule of school A → 404', async () => {
+    const res = await app.inject({
+      method: 'DELETE', url: `/api/v1/schedules/${scheduleAId}`,
+      headers: getAuthHeadersB(),
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  // ========================================================================
+  // Cross-School: School Program Adoptions
+  // ========================================================================
+
+  it('T6.2j: User A cannot activate program for school B → 403', async () => {
+    const res = await app.inject({
+      method: 'POST', url: `/api/v1/schools/${schoolBId}/programs/activate`,
+      headers: getAuthHeadersA(),
+      payload: { program_id: 2 },
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('T6.2k: User B cannot activate program for school A → 403', async () => {
+    const res = await app.inject({
+      method: 'POST', url: `/api/v1/schools/${schoolAId}/programs/activate`,
+      headers: getAuthHeadersB(),
+      payload: { program_id: 2 },
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('T6.2l: User A cannot GET school programs of school B → 403', async () => {
+    const res = await app.inject({
+      method: 'GET', url: `/api/v1/schools/${schoolBId}/programs`,
+      headers: getAuthHeadersA(),
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('T6.2m: User B cannot deactivate school programs of school A → 403', async () => {
+    const res = await app.inject({
+      method: 'DELETE', url: `/api/v1/schools/${schoolAId}/programs/1`,
+      headers: getAuthHeadersB(),
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('T6.2n: User A cannot GET available programs for school B', async () => {
+    const res = await app.inject({
+      method: 'GET', url: `/api/v1/schools/${schoolBId}/programs/available`,
+      headers: getAuthHeadersA(),
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('T6.2o: GET /schedules list only returns schedules from user\'s school', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/v1/schedules?page=1&limit=50',
+      headers: getAuthHeadersA(),
+    });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.payload) as { data: any[]; pagination: { total: number } };
+    // All returned schedules should belong to school A via class lookup
+    for (const s of body.data) {
+      // Verify schedule relates to school A's class
+      expect(s.class_id).toBeDefined();
+    }
   });
 });

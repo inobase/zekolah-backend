@@ -8,6 +8,7 @@ import { FastifyZodInstance } from '../types/fastify-zod'
 import { getKnex } from '../config/database'
 import { ScheduleController } from '../controllers/schedule.controller'
 import { ContextHeadersSchema } from '../validators/common.validator'
+import { requireRole } from '../middlewares/requireRole'
 import { z } from 'zod'
 import {
   ScheduleIdParamSchema,
@@ -112,6 +113,7 @@ export const scheduleRoutes = async (app: FastifyZodInstance): Promise<void> => 
   app.withTypeProvider<ZodTypeProvider>().post(
     '/',
     {
+      preHandler: requireRole(['admin', 'super_admin']),
       onRequest: [app.authenticate],
       schema: {
         tags: ['jadwal'],
@@ -178,6 +180,7 @@ export const scheduleRoutes = async (app: FastifyZodInstance): Promise<void> => 
   app.withTypeProvider<ZodTypeProvider>().patch(
     '/:id',
     {
+      preHandler: requireRole(['admin', 'super_admin']),
       onRequest: [app.authenticate],
       schema: {
         tags: ['jadwal'],
@@ -246,6 +249,7 @@ export const scheduleRoutes = async (app: FastifyZodInstance): Promise<void> => 
   app.withTypeProvider<ZodTypeProvider>().delete(
     '/:id',
     {
+      preHandler: requireRole(['admin', 'super_admin']),
       onRequest: [app.authenticate],
       schema: {
         tags: ['jadwal'],

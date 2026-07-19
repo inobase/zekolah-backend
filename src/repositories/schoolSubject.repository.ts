@@ -49,6 +49,12 @@ export class SchoolSubjectRepository {
     return (await this.knex<SchoolSubject>('school_subjects').where({ id }).first()) ?? null
   }
 
+  async findByIdWithSchool(id: number, schoolId: number): Promise<SchoolSubject | null> {
+    return (await this.knex<SchoolSubject>('school_subjects')
+      .where({ id, school_id: schoolId })
+      .first()) ?? null
+  }
+
   async findByIdWithSpecialization(id: number): Promise<(SchoolSubject & { specialization?: any }) | null> {
     return await this.knex<SchoolSubject>('school_subjects')
       .leftJoin('specializations', 'school_subjects.specialization_id', '=', 'specializations.id')
